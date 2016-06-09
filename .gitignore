@@ -6,7 +6,6 @@
 *.a
 *.o
 *.so
-code/bin/*
 .nfs*
 .Rproj.user
 *.Rproj
