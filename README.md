@@ -6,7 +6,7 @@ Version 1.0
 
 RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for Illimina TrueSeq sequencing data. It generates a standard RNA-Seq HTML report which includes alignment quality assessment, sample distance evaluation, PCA plots, dispersion plots, MA plots, raw count/normalized count/fpkm table, pairwise differential expression analysis, top differential expressed genes heatmap, user-defined targets differential expression analysis/heatmap. 
 
-Manual:
+Settin up:
 
 1. You first need to have pre-built STAR reference in your [referenceFiles](referenceFiles/) folder. If you do not have it, please download a "genome.fa" file from public sites. And you also need to have a GTF file in your [referenceFiles](referenceFiles/) folder. This file should be the same GTF file you used to built STAR reference.
    Please use the following command to generate STAR Index:    
