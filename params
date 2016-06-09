@@ -1,3 +1,4 @@
+STAR-Genome	--genomeFastaFiles referenceFiles/genome.fa --sjdbGTFfile referenceFiles/gencode.v23.annotation.gtf 
 fastq-download	meta_data
 fastq-link	SRA
 #fastqc	meta_data/sra_info.txt

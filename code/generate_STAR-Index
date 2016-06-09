@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+if [ "$#" -lt 2 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 [Optional: Threads (Default 6)] <PARMAS file> <OUTPUT_DIR>\n\n"
+        exit
+fi
+
+if [[ $1 =~ ^[[:digit:]]{1,2}$ ]];then NSLOTS=$1;shift
+elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
+
+PARAMS=$1
+OUT_DIR=$2
+
+params=`cat $PARAMS | grep "STAR-Genome" | cut -f2`
+
+if [ ! -z "$params" ]
+then
+
+	if [ ! -d $OUT_DIR ]
+	then
+        	mkdir $OUT_DIR
+	fi
+
+	STAR --runMode genomeGenerate --genomeDir $OUT_DIR --runThreadN $NSLOTS $params
+
+fi
+

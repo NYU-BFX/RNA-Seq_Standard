@@ -1,0 +1,13 @@
+#!/bin/bash
+
+TEMP="$#"
+FILE_COUNT=$((TEMP*2))
+
+INDEX="1"
+
+for i in $(seq 2 2 $FILE_COUNT)
+do
+	INDEX=${INDEX}","${i}
+done
+
+paste $@ | cut -f${INDEX} > raw_count.txt

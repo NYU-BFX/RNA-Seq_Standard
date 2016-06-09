@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source code/custom_bash_profile code    # shell settings
+
+if [ "$#" -lt 1 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 [STAR Alignment Summary Files]\n\n"
+        exit
+fi
+
+grep . $@ | sed -E 's/\s+//g' | grep "Uniquelymappedreadsnumber\|Numberofreadsmappedtotoomanyloci\|Numberofreadsunmapped\|Numberofreadsunduplicated\|Numberofreadsduplicated" | tr '/:|' '\t' | perl -lane 'for($i=0;$i<@F;$i++){if($F[$i]=~/STAR.Log.final.out/){print "$F[$i-1]\t$F[$i+1]\t$F[$i+2]";last}}' | sed 's/Uniquelymappedreadsnumber/Uniquely_Mapped/g' | sed 's/Numberofreadsmappedtotoomanyloci/Multi_Mapped/g' | sed 's/Numberofreadsunmapped/Unmapped/g' | sed 's/Numberofreadsunduplicated/NonDuplicated/g' | sed 's/Numberofreadsduplicated/Duplicated/g'

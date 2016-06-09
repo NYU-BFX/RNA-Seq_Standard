@@ -1,0 +1,300 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -M yixiao.gong@nyumc.org
+#$ -m a
+
+
+if [ "$#" -ne 5 ] && [ "$#" -ne 4 ] && [ "$#" -ne 3 ]
+then
+	printf "\n\n###### Usage\n\n"
+	printf "$0 [Optional: Threads (Default 6)] <PARAMS file> <OUTPUT DIR> <FASTQ_DIR> <SAMPLE NAME>\n\n"
+	exit 1
+fi
+
+date
+
+
+#########################
+# input
+
+if [[ $1 =~ ^[[:digit:]]{1,2}$ ]];then NSLOTS=$1;shift
+elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
+
+PARAMS=$1
+OUT_DIR=$2
+INP_DIR=$3
+SAMPLE=$4
+
+BASE_DIR=$OUT_DIR/$SAMPLE
+
+
+
+#########################
+# output
+STAR_PREFIX=${BASE_DIR}/STAR.
+NAME=`basename $BASE_DIR`
+
+
+
+#########################
+# check inputs
+if [ ! -d $OUT_DIR ]; then mkdir $OUT_DIR; fi
+
+# identify FastQ files to be used
+READ_PAIRS=`read_pairs $INP_DIR/${SAMPLE}/${SAMPLE}*.gz`
+FASTQ1=`echo $READ_PAIRS | cut -d ' ' -f2`
+FASTQ2=`echo $READ_PAIRS | cut -d ' ' -f3`
+ALL_FASTQS=$FASTQ1,$FASTQ2
+FLAG=0
+for READS in `echo $ALL_FASTQS | tr ',' ' '`
+do
+	if [ ! -s $READS ] || [ ! $READS ]
+	then
+		printf "\n\n ERROR! FASTQ $READS DOES NOT EXIST \n\n"
+		FLAG=1		
+	fi
+done
+
+if [ $FLAG == "1" ]; then exit 1; fi
+
+
+
+#########################
+
+mkdir -p $BASE_DIR
+echo "#!/bin/bash" >> $BASE_DIR/run.bash
+echo "cd `pwd`" >> $BASE_DIR/run.bash
+
+CMD="
+source code/custom_bash_profile	# shell settings
+"
+printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
+
+
+
+#########################
+# run STAR Aligner
+
+params=`cat $PARAMS | grep "^STAR" | cut -f2`
+
+if [ -z "$params" ] || [ -f $BASE_DIR/accepted_hits.bam ]
+then
+	printf "\n\nSKIPPING STAR!\n\n"
+else
+
+printf "\n\n***** Alignning Using STAR...\n"
+echo " * STAR REF: $STAR_GENOME "
+echo " * FASTQ R1: $FASTQ1 "
+echo " * FASTQ R2: $FASTQ2 "
+echo " * BAM: ${STAR_PREFIX}Aligned.sortedByCoord.out.bam "
+
+# --outFilterType BySJout - ENCODE standard option
+# --outSAMmapqUnique - int: 0 to 255: the MAPQ value for unique mappers
+
+# relevant errors:
+# SeqAnswers: "HTseq cannot deal with jM:B:c,-1 and jI:B:i,-1 SAM attributes which are output if you use (non-default) --outSAMmode Full"
+# Picard says STAR-sorted BAM "is not coordinate sorted", so using samtools for sorting
+
+CMD="
+STAR \
+--runThreadN $NSLOTS \
+--genomeLoad NoSharedMemory \
+--outFilterMismatchNoverLmax 0.05 \
+--outFilterType BySJout \
+--outSAMstrandField intronMotif \
+--outSAMattributes NH HI AS nM NM MD XS \
+--outSAMmapqUnique 60 \
+--twopassMode Basic \
+--readFilesIn $FASTQ1 $FASTQ2 \
+--outFileNamePrefix $STAR_PREFIX \
+--quantMode GeneCounts \
+--outStd Log \
+--outFilterIntronMotifs RemoveNoncanonical \
+$params
+"
+#printf "\n\n $CMD \n\n"
+printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
+eval $CMD
+
+# delete tmp directory (should be empty at this point)
+rm -rfv ${STAR_PREFIX}_STARtmp
+sleep 5
+fi
+
+# check that output bam file size above 10 kb (misreported if checked too soon)
+
+du ${STAR_PREFIX}Aligned.sortedByCoord.out.bam
+BAM_SIZE=$(du ${STAR_PREFIX}Aligned.sortedByCoord.out.bam | cut -f 1)
+if [ $BAM_SIZE -lt 100 ]
+then
+	printf "\n\n ERROR! BAM $BAM TOO SMALL \n\n"
+	exit 1
+fi
+
+
+params=""
+
+
+
+#######################
+# Remove Duplicates
+
+params=`cat $PARAMS | grep "^MarkDuplicates" | cut -f2`
+
+if [ -z "$params" ] || [ -f $BASE_DIR/remove_duplicates.txt ]
+then
+        printf "\n\nSKIPPING Remove Duplicates!\n\n"
+else
+#---------------#
+# need to figure out how to set this path to the jar files
+CMD="
+java -XX:-UsePerfData -Xms8G -Xmx16G -jar /ifs/home/gongy05/utilities/picard-tools/1.88/MarkDuplicates.jar \
+VERBOSITY=WARNING QUIET=true VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=2500000 \
+$params \
+INPUT=${STAR_PREFIX}Aligned.sortedByCoord.out.bam \
+OUTPUT=$BASE_DIR/rm_dup.bam \
+METRICS_FILE=$BASE_DIR/remove_duplicates.txt
+"
+#printf "\n\n $CMD \n\n"
+printf "\n\n***** Removing Duplicates...\n"
+printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
+eval $CMD
+sleep 5
+
+# check that bam file size above 10 kb (misreported if checked too soon)
+du $BASE_DIR/rm_dup.bam
+BAM_SIZE=$(du $BASE_DIR/rm_dup.bam | cut -f 1)
+if [ $BAM_SIZE -lt 100 ]
+then
+	printf "\n\n ERROR! BAM $BAM TOO SMALL \n\n"
+	exit 1
+fi
+sleep 5
+
+# determine which alignment file to use
+
+CMD="
+ln -s STAR.Aligned.sortedByCoord.out.bam $BASE_DIR/accepted_hits.bam;
+rm -rf $BASE_DIR/rm_dup.*
+"
+printf "\n\n$CMD \n\n" >> $BASE_DIR/run.bash
+eval $CMD
+
+# add duplicate removal log into final log
+
+CMD="
+cat ${STAR_PREFIX}Log.final.out | grep \"Number of input reads\|Uniquely mapped reads number\|Number of reads mapped to too many loci\" | cut -f2 | perl -lane 'printf \"\$_\t\"' | awk '{print \$1-\$2-\$3}' | awk '{print \"\t\tNumber of reads unmapped\t|\t\"\$1}' >> ${STAR_PREFIX}Log.final.out;
+echo >> ${STAR_PREFIX}Log.final.out;
+echo -e \"\t\t\t\tDUPLICATED READS:\" >> ${STAR_PREFIX}Log.final.out;
+head -8 $BASE_DIR/remove_duplicates.txt | tail -1 | cut -f8 | awk '{print \"\t\t\t% of reads Duplicated\t|\t\"\$1*100\"%\"}' >> ${STAR_PREFIX}Log.final.out;
+grep \"Uniquely mapped reads number\|Duplicated\" ${STAR_PREFIX}Log.final.out | sed -E 's/\s+//g' | cut -d '|' -f2 | perl -lane 'printf \"\$_\t\"' | perl -lane '{\$dup=sprintf(\"%.0f\",\$F[0]*\$F[1]/100);\$unique=\$F[0]-\$dup;print \"\$unique\t\$dup\"}' | awk '{print \"\t\tNumber of reads unduplicated\t|\t\"\$1\"\n\t\tNumber of reads duplicated\t|\t\"\$2}' >> ${STAR_PREFIX}Log.final.out
+"
+#printf "\n\n $CMD \n\n"
+printf "\n\n***** Summarizing Aligment Results...\n"
+echo -e "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
+eval $CMD
+
+fi
+
+params=""
+
+
+
+#######################
+# check if gene counts file is present and determine STRAND
+
+if [ ! -s ${STAR_PREFIX}ReadsPerGene.out.tab ] || [ ! ${STAR_PREFIX}ReadsPerGene.out.tab ]
+then
+	printf "\n\n ERROR! COUNTS FILE ${STAR_PREFIX}ReadsPerGene.out.tab NOT GENERATED \n\n"
+	exit 1
+else
+	STRAND=`cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | sort -k2,2nr | head -5000 | tail -3000 | awk '{if(($3+1)/($4+1)<0.2){print "firststrand"}else if(($3+1)/($4+1)>5){print "secondstrand"}else{print "unstranded"}}' | sort | uniq -c | sed -E 's/^\s+//g' | awk '{print $2"\t"$1}' | sort -k2,2nr | head -1 | awk '{print $1}'`
+# STRAND="unstranded" # default value
+	if [ $STRAND == "firststrand" ]
+	then
+		STAR_STRAND="Stranded"
+		STR=4
+	elif [ $STRAND == "secondstrand" ]
+	then
+		STAR_STRAND="Stranded"
+		STR=3
+	elif [ $STRAND == "unstranded" ]
+	then
+		STAR_STRAND="Unstranded"
+		STR=2
+	else
+		printf "\n\n ERROR! STRAND CAN'T BE DETERMINED\n\n"
+		exit 1
+	fi
+	
+	CMD="
+cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | sort -k2,2nr | head -5000 | tail -3000 | awk '{if((\$3+1)/(\$4+1)<0.2){print \"firststrand\"}else if((\$3+1)/(\$4+1)>5){print \"secondstrand\"}else{print \"unstranded\"}}' | sort | uniq -c | sed -E 's/^\s+//g' | awk '{print \$2\"\t\"\$1}' | sort -k2,2nr > $BASE_DIR/$STRAND.tag;
+echo -e \"Gene\t${NAME}\" > ${STAR_PREFIX}count.txt;
+cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | cut -f1,${STR} >> ${STAR_PREFIX}count.txt
+"
+#        printf "\n\n$CMD\n\n"
+	printf "\n\n***** Extracting Counts...\n"
+        printf "\n\n$CMD \n\n" >> $BASE_DIR/run.bash
+	eval $CMD
+
+fi
+sleep 5
+
+
+
+#########################
+# produce visualization WIG file
+
+params=`cat $PARAMS | grep "^rnaseq_tracks" | cut -f2`
+
+if [ -z "$params" ] || [ -f $BASE_DIR/$SAMPLE.bw ]
+then
+        printf "\n\nSKIPPING Generating Trakcs!\n\n"
+else
+
+#CMD="
+#STAR \
+#--runThreadN $NSLOTS \
+#--runMode inputAlignmentsFromBAM \
+#--outStd Log \
+#--outWigType wiggle read1_5p \
+#--outWigStrand $STAR_STRAND \
+#--outWigNorm RPM \
+#--inputBAMfile ${STAR_PREFIX}Aligned.sortedByCoord.out.bam \
+#--outFileNamePrefix ${BASE_DIR}/${NAME}.;
+#rm -rf ${BASE_DIR}/${NAME}.Signal.Unique.str*.out.wig;
+#rm -rf ${STAR_PREFIX}Unmapped.out.mate*;
+#ls ${BASE_DIR}/${NAME}.Signal.UniqueMultiple.str*.out.wig | sed -r 's/.wig//g' | perl -lane 'system \"~/utilities/wigToBigWig \$_.wig $REFERENCE/chromInfo.txt \$_.bw;rm -rf \$_.wig;\"';
+#"
+CMD="
+generate_rnaseq_tracks $BASE_DIR/accepted_hits.bam $params $BASE_DIR $SAMPLE
+"
+#printf "\n\n $CMD \n\n"
+printf "\n\n***** Generating Tracks...\n"
+printf "\n\n $CMD \n" >> $BASE_DIR/run.bash
+eval $CMD
+
+fi
+
+params=""
+
+
+
+#########################
+# move log files
+
+if [ $JOB_ID ]
+then
+	cp *.o${JOB_ID} $BASE_DIR/run.out
+	cp *.po${JOB_ID} $BASE_DIR/$JOB_ID.po
+fi
+
+
+
+#########################
+date
+# end

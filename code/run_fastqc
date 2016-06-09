@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+if [ "$#" -lt 2 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <PARMAS file> <OUTPUT_DIR> <FASTQ DIR> <Optional: Sample Name>\n\n"
+        exit
+fi
+
+PARAMS=$1
+OUT_DIR=$2
+INP_DIR=$3
+SAMPLE=$4
+
+params=`cat $PARAMS | grep "^fastqc" | cut -f2`
+
+if [ ! -z "$params" ]
+then
+
+	if [ ! -d $OUT_DIR ]
+	then
+        	mkdir $OUT_DIR
+	fi
+
+	for LINE in `cat $params | grep -v "^/" | cut -f1`
+	do
+if [ "$LINE" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
+then
+		for myfastq in `ls $INP_DIR/$LINE/${LINE}*`
+		do
+			printf "\n\n***** Running FastQC on file $myfastq...\n"
+			prefix=`basename $myfastq | sed 's/\.fastq/\t/gI' | cut -f1`
+			mkdir -p $OUT_DIR/$prefix
+			fastqc -o $OUT_DIR/$prefix $myfastq
+		done
+fi
+	done
+fi
+

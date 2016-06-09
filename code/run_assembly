@@ -1,0 +1,75 @@
+#!/bin/bash
+
+source code/custom_bash_profile code	# shell settings
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -M yixiao.gong@nyumc.org
+#$ -m a
+
+
+if [ "$#" -lt 3 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 [Optional: Threads (Default 6)] <PARMAS file> <OUTPUT_DIR> <Alignment DIR> <Sample Name>\n\n"
+        exit
+fi
+
+date
+
+
+
+#########################
+# input
+if [[ $1 =~ ^[[:digit:]]{1,2}$ ]]; then NSLOTS=$1;shift; 
+elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
+
+PARAMS=$1
+OUT_DIR=$2
+INP_DIR=$3
+SAMPLE=$4
+
+BASE_DIR=$OUT_DIR/$SAMPLE
+
+#########################
+# check inputs
+if [ ! -d $OUT_DIR ]; then mkdir $OUT_DIR; fi
+
+# identify STRAND
+STRAND=`basename $(ls $INP_DIR/$SAMPLE/*.tag | cut -d ' ' -f1) | cut -d'.' -f1`
+
+if [ -z "$STRAND" ]
+then
+	exit 1
+fi
+
+#########################
+mkdir -p $BASE_DIR
+params=`cat $PARAMS | grep "^cufflinks" | cut -f2`
+
+
+
+#########################
+# run cufflinks
+printf "\n\n***** Assembling Using cufflinks...\n"
+
+if [ ! -z "$params" ]
+then
+
+echo "#!/bin/bash" > $BASE_DIR/run.bash 
+echo "cd `pwd`" >> $BASE_DIR/run.bash
+
+CMD="
+source code/custom_bash_profile
+cufflinks -p $NSLOTS --library-type=fr-${STRAND} $params -o $BASE_DIR $INP_DIR/$SAMPLE/accepted_hits.bam
+"
+#printf "\n\n $CMD \n\n"
+printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
+eval $CMD
+
+fi
+
+params=""
+
+#########################
+date
+#end

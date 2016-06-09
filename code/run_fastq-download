@@ -1,0 +1,109 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -M yixiao.gong@nyumc.org
+#$ -m a
+
+
+if [ "$#" -lt 3 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <PARAMS file> <OUTPUT_DIR> <INPUT_DIR> [Optional: Sample Name] \n\n"
+        exit
+fi
+
+date
+
+
+
+
+#########################
+# input
+PARAMS=$1
+OUT_DIR=$2
+INP_DIR=$3
+SAMPLE=$4
+
+CWD=`pwd`
+
+#########################
+if [ ! -d $OUT_DIR ]; then mkdir -p $OUT_DIR; fi
+
+IFS=$'\n'
+
+params=`cat $PARAMS | grep "^fastq-download" | cut -f2`
+
+
+
+#########################
+# read input
+
+if [ ! -z "`cat $PARAMS | grep "^fastq-download"`" ]
+then
+FLAG=0
+for record in `cat $INP_DIR/sra_info.txt | grep SRX ` 
+do
+	FLAG=1
+	name_sample=`echo $record | cut -f1`
+	id_sample=`echo $record | cut -f2`
+if [ "$name_sample" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
+then
+	link_sample="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${id_sample:0:6}/$id_sample/"
+	ID_RUNS=(`curl -sS $link_sample | sed -r 's/\s+/\t/g' | cut -f9 `)
+	num_run=0
+
+
+#########################
+# check for output existance
+	if [ ! -d $OUT_DIR/$name_sample ]
+	then
+		mkdir $OUT_DIR/$name_sample
+		ln -s ../$name_sample $OUT_DIR/$name_sample/$id_sample
+	else
+		printf "\n\nOutput $OUT_DIR/$name_sample Existing!\n\n"
+		break
+	fi
+	
+#########################
+# SRA Download
+	echo "#!/bin/bash" > $OUT_DIR/$name_sample/run.bash
+	echo "source ../code/custom_bash_profile" >> $OUT_DIR/$name_sample/run.bash
+	for id_run in "${ID_RUNS[@]}"
+	do
+		((num_run++))
+		num_run=$(printf "%03d" $num_run)
+		link_run=${link_sample}${id_run}"/" 
+		ID_FILES=(`curl -sS $link_run | sed -r 's/\s+/\t/g' | cut -f9 `)
+		num_read=0
+		for name_file in "${ID_FILES[@]}"
+		do
+			link_file=${link_run}${name_file}"/"
+			id_file=${name_file%.*}
+cd $OUT_DIR/$name_sample/
+
+printf "\n\n***** Downloading $id_sample/${id_file} into $OUT_DIR/$name_sample Using fastq-dump.2...\n"
+echo "../code/utilities/sratoolkit/fastq-dump.2 --tries 10 --split-files -A "$id_file" -gzip" >> run.bash
+pwd
+../code/utilities/sratoolkit/fastq-dump.2 --tries 10 --split-files -A $id_file -gzip
+
+cd $CWD
+		done
+	done
+fi
+done
+
+fi
+
+if [ $FLAG -ne 1 ] 
+then
+	printf "\n\nERROR in INPUT file!\n\n"
+	exit 1
+fi
+
+params=""
+
+#########################
+date
+# end

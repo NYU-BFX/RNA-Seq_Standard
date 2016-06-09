@@ -1,0 +1,25 @@
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+# User specific aliases and functions
+
+PS1="[\u@\h \W]\$ "
+
+
+PATH=/cm/shared/apps/sge/2011.11p1/bin/linux-x64:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/sbin:/usr/sbin:code/utilities/STAR/:code/:code/bin/:code/utilities/sratoolkit/:code/utilities/cufflinks/:code:code/bin:code/utilities:code/utilities/CPAT/:code/utilities/fastqc/:code/utilities/subread
+
+
+PYTHONPATH=$HOME/utilities/python_software/local/apps/python/2.7.3/lib/python2.7/site-packages:$PYTHONPATH
+
+export PATH
+export PYTHONPATH
+
+export PERL5LIB=$HOME/lib
+export EDITOR="/usr/local/bin/mate -w"
+
+module load samtools/0.1.19
+module load r/3.3.0

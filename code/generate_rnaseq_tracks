@@ -1,0 +1,60 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+if [ "$#" -ne 4 ]; then
+        printf "\n\n###### Usage\n\n"
+        printf "$0 <INPUT BAM file(s)> [PATH to chromInfo.txt] [OUTPUT DIR] TRACK-TITLE\n\n"
+        exit
+fi
+
+FILE_LIST=($1)
+CHROMINFO=$2
+OUT_DIR=$3
+TITLE=$4
+
+
+win_size=200
+win_dist=50
+min_reads=3
+COLOR="200,0,0"
+pos="chr16:30061173-30072152"
+
+IFS=","
+
+echo "##################################################################"
+
+# aggregate reads from multiple BAM files and convert to REG format
+tmp=$(mktemp --tmpdir=$OUT_DIR)
+for file in ${FILE_LIST[@]}
+do
+	IFS=" "
+	echo "Preprocessing alignment $file ..."
+	samtools view $file | grep -w 'NH:i:1' | genomic_regions reg -v >> $tmp
+done
+
+# compute scaling factor (for conversion to RPKMs)
+echo "Computing scaling factor ..."
+	n_reads=`cat $tmp | wc -l`
+	scale=`echo "1000000000/$n_reads/$win_size" | bc -l`
+echo "reads=$n_reads"
+echo "scale=$scale"
+
+# create scaled bigWig file
+
+# create genome.bed file for genomic_tools
+cat $CHROMINFO | awk '{print $1"\t0\t"$2}' > $OUT_DIR/genome.bed
+
+echo "Creating bigWig file..."
+cat $tmp \
+	| genomic_regions split -v \
+	| genomic_scans counts -op c -i -min $min_reads -w $win_size -d $win_dist -g $OUT_DIR/genome.bed \
+	| genomic_regions center \
+	| genomic_regions wig -t "${TITLE}" -scale $scale -s $win_dist -p $pos -c $COLOR -o 'alwaysZero=on' \
+	| awk '{if($1~/[0-9]+/){print $1"\t-"$2}else{print}}' \
+	| wigToBigWig stdin $CHROMINFO $OUT_DIR/${TITLE}.bw
+
+# clean-up
+rm -f $tmp $OUT_DIR/genome.bed 
+
+echo "Done."

@@ -1,0 +1,39 @@
+#!/usr//bin/perl
+
+
+foreach $file(@ARGV){
+	@pathes=split(/\//,$file);
+	$file_name=pop @pathes;
+	@label=split(/_/,$file_name);
+	$names="";
+	foreach(@label){
+#		if($_ =~ /^L\d{3}$/ || $_ =~ /^R\d$/ || $_ =~ /^R\d\./)
+		if($_ =~ /^L\d{3}$/ )
+			{last;}
+		else{$names = $names."_".$_;}
+	}
+	$samples{substr($names,1)}++;
+}
+
+use Cwd;
+$path=getcwd();
+
+
+foreach $sample(keys %samples) {
+	print $sample." ";
+	$i=1;
+	foreach $file(@ARGV){
+		if($file =~ /$sample.*[_|\.]R1[_|\.].*/){
+			if($i){print " $file";$i=0;}
+			else{print ",$file"}
+		}
+	}
+	$i=1;
+	foreach $file(@ARGV){
+		if($file =~ /$sample.*[_|\.]R2[_|\.].*/){
+			if($i){print " $file";$i=0;}
+			else{print ",$file"}
+		}
+	}
+	print "\n";
+}

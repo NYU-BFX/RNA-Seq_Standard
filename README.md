@@ -11,14 +11,14 @@ Manual:
 1. You first need to have pre-built STAR reference in your "referenceFiles" folder. If you do not have it, please download a "genome.fa" file from public sites.
 
 2. You also need to have a GTF file in your "referenceFiles" folder. This file should be the same GTF file you used to built STAR reference.
-
+   Please use the following command to generate STAR Index: code/generate_STAR-Index params referenceFiles/STAR_Reference
 3. You need to have a "chromInfo.txt" file in your "referenceFiles" folder in order to produce RNA-Seq signal tracks. 
 
-4. This pipeline can process GTC generated RNA-Seq data in the "/ifs/data/sequence/results/" folder. Please see the "meta_data/20160224.txt" for template. Sample name need to be defined in this file for each of your samples.
+4. This pipeline can process GTC generated RNA-Seq data in the "/ifs/data/sequence/results/" folder. Please see the "meta_data/20160224.txt" for template. Sample name need to be defined in this file for each of your samples. You will need to generate a .txt file for each of your fastq files directories put them into "meta_data/" directory.
 
 5. This pipeline can also perform automatic download from SRA and process the samples. Please see the "meta_data/sra_info.txt" for template. Sample names need to be defined in this file for corresponding SRX number. 
 
-6. In "meta_data/group_info.txt" file, you need to categorize your sample into different groups to perform differential expression analysis. 
+6. In "meta_data/group_info.txt" file, you need to categorize your sample into different groups to perform differential expression analysis.
 
 7. If you have a signature gene list (for example you are doing knockdown of SPOP, then the list should include SPOP and some other related genes) which you would like to check the expression vaule immediately you can define it in the "meta_data/signature.txt". If you have a list of defined targets (for example some ChIP-Seq experiment define a list of direct targets of your knockdown gene), you can define them in the "meta_data/target.txt" file. Or you can keep the existing link to the "meta_data/signature.txt". Please notice the name of the gene in these two file must be consistant with the GTC you use to generate the STAR genome. 
 

@@ -1,0 +1,146 @@
+#!/bin/bash
+
+source code/custom_bash_profile	# shell settings
+
+#$ -S /bin/bash
+#$ -cwd
+#$ -M yixiao.gong@nyumc.org
+#$ -m a
+
+
+if [ "$#" -lt 3 ]; then
+	printf "\n\n###### Usage\n\n"
+	printf "$0 <PARAMS file> <OUTPUT_DIR> <INPUT_DIR> [Optional: Sample Name] \n\n"
+	printf "Attention: "
+	printf "	For SRA download file link, the INPUT_DIR is the download DIR, and PARAMS file should have \"SRA\" as parameter\n\n"
+	printf "	For GTC local sample, the INPUT_DIR is the meta_data DIR, and the PARAMS file should have \"GTC\" as parameter\n\n"
+	exit
+fi
+
+date
+
+
+
+
+#########################
+# input
+PARAMS=$1
+OUT_DIR=$2
+INP_DIR=$3
+SAMPLE=$4
+
+
+
+#########################
+
+IFS=$'\n'
+
+params=`cat $PARAMS | grep "^fastq-link" | cut -f2`
+
+#########################
+# read input
+
+if [ ! -z "`cat $PARAMS | grep "^fastq-link"`" ]
+then
+
+FLAG=0
+if [ -f $INP_DIR/meta_data/sra_info.txt ] && [ $params == "SRA" ]
+then
+#########################
+# For SRA Download
+for record in `cat $INP_DIR/meta_data/sra_info.txt | grep SRX` 
+do
+	FLAG=1
+	name_sample=`echo $record | cut -f1`
+	id_sample=`echo $record | cut -f2`
+if [ "$name_sample" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
+then
+	link_sample="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${id_sample:0:6}/$id_sample/"
+	ID_RUNS=(`curl -sS $link_sample | sed -r 's/\s+/\t/g' | cut -f9 `)
+	num_run=0
+
+
+#########################
+# check for output existance
+	if [ ! -d $INP_DIR/$name_sample ]
+	then
+		printf "\n\nERROR! $INP_DIR/${name_sample} not found!\n\n"
+		exit 1
+	fi
+	
+	if [ ! -d $OUT_DIR/$name_sample ]
+	then
+		mkdir $OUT_DIR/$name_sample
+	fi
+
+
+	for id_run in "${ID_RUNS[@]}"
+	do
+		((num_run++))
+		num_run=$(printf "%03d" $num_run)
+		link_run=${link_sample}${id_run}"/" 
+		ID_FILES=(`curl -sS $link_run | sed -r 's/\s+/\t/g' | cut -f9 `)
+		num_read=0
+		for name_file in "${ID_FILES[@]}"
+		do
+			link_file=${link_run}${name_file}"/"
+			id_file=${name_file%.*}
+
+printf "\n\n***** Linking $name_sample To $INP_DIR/$name_sample/${id_file}...\n"
+
+ln -sf ../`basename $INP_DIR`/$name_sample/${id_file}_1.fastq.gz $OUT_DIR/$name_sample/${name_sample}_L${num_run}_R1.fastq.gz
+if [[ -f ../`basename $INP_DIR`/$name_sample/${id_file}_2.fastq.gz ]]
+then
+ln -sf ../`basename $INP_DIR`/$name_sample/${id_file}_2.fastq.gz $OUT_DIR/$name_sample/${name_sample}_L${num_run}_R2.fastq.gz
+fi
+
+		done
+	done
+fi
+done
+
+elif [ -f $INP_DIR/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].txt ] && [ $params == "GTC" ]
+then
+	FLAG=1
+	for FILE in `ls $INP_DIR/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].txt`
+	do
+		mylink=`head -1 $FILE`
+		dirname=`basename $FILE | sed 's/.txt//g'`
+		ln -s $mylink $OUT_DIR/$dirname
+		for record in `cat $FILE | grep -v "\/"`
+		do
+			sample_name=`echo $record | cut -f1`		
+			if [ ! -d $OUT_DIR/$sample_name ]
+			then
+				mkdir -p $OUT_DIR/$sample_name
+			fi
+			if [ "$sample_name" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
+			then
+				identifier=`echo $record | cut -f2`
+				printf "\n\n***** Linking $sample_name To $mylink/${identifier}*...\n"
+				for myfastq in `ls $OUT_DIR/$dirname/* | grep "$identifier"`
+				do
+					suffix=`echo $myfastq | sed 's/'$identifier'/\t/g' | cut -f2`
+					ln -s ../$dirname/`basename $myfastq` $OUT_DIR/$sample_name/${sample_name}${suffix}
+				done
+			fi			
+		done
+	done
+
+else
+	echo
+fi
+
+fi
+
+if [ $FLAG -ne 1 ]
+then
+	printf "\n\nERROR in INPUT file!\n\n"
+	exit 1
+fi
+
+params=""
+
+#########################
+date
+#end
