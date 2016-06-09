@@ -1,0 +1,4 @@
+Sample	Group
+EryA	Group1
+EryB	Group2
+EryC	Group1

@@ -1,0 +1,13 @@
+.DS_Store
+*.pdf
+*.fastq.gz
+*.fastq
+*.bam
+*.a
+*.o
+*.so
+code/bin/*
+.nfs*
+.Rproj.user
+*.Rproj
+.Rhistory

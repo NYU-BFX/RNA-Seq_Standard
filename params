@@ -1,0 +1,8 @@
+fastq-download	meta_data
+fastq-link	SRA
+#fastqc	meta_data/sra_info.txt
+STAR	--readFilesCommand zcat --outReadsUnmapped Fastx --outSAMtype BAM SortedByCoordinate --outFilterMultimapNmax 1 --genomeDir referenceFiles/STAR_Reference
+MarkDuplicates	ASSUME_SORTED=false CREATE_INDEX=true REMOVE_DUPLICATES=true
+rnaseq_tracks	referenceFiles/chromInfo.txt
+#cufflinks	-q -M referenceFiles/maskPlussnRNA.gtf -g referenceFiles/RefSeqRefFlat.gtf
+DESeq2	referenceFiles/Homo_sapiens.GRCh37.??.gtf
