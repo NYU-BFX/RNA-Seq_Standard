@@ -4,7 +4,7 @@ Author: Yixiao Gong
 Date: 06/08/2016
 Version 1.0
 
-RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for Illimina TrueSeq sequencing data. It generates a standard RNA-Seq HTML report which include alignment quality assessment, sample distance evaluation, PCA plots, dispersion plots, MA plots, raw count/normalized count/fpkm table, pairwised differential expression analysis, top differential expressed genes heatmap, user-defined targets differential expression analysis/heatmap. 
+RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for Illimina TrueSeq sequencing data. It generates a standard RNA-Seq HTML report which includes alignment quality assessment, sample distance evaluation, PCA plots, dispersion plots, MA plots, raw count/normalized count/fpkm table, pairwise differential expression analysis, top differential expressed genes heatmap, user-defined targets differential expression analysis/heatmap. 
 
 Manual:
 
