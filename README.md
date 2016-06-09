@@ -28,7 +28,7 @@ How to run it:
 1. Once everything has been set up, you can run the pipeline in two stages:
 
    a. Submit your jobs for each of your sample using the following command:
-	cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample {}
+	`cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample {}`
    b. After all the samples are processed, you can run the following command to summarize your results:
         code/Summarize params pipeline/summarize `head -1 meta_data/group_info.txt | cut -f2`
    c. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
