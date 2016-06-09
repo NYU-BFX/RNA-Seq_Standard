@@ -1,4 +1,4 @@
-# RNA-Seq_Standard
+# RNA-Seq Standard
 
 Author: Yixiao Gong
 Date: 06/08/2016
