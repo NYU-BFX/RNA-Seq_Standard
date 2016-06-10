@@ -87,7 +87,6 @@ then
 else
 
 printf "\n\n***** Alignning Using STAR...\n"
-echo " * STAR REF: $STAR_GENOME "
 echo " * FASTQ R1: $FASTQ1 "
 echo " * FASTQ R2: $FASTQ2 "
 echo " * BAM: ${STAR_PREFIX}Aligned.sortedByCoord.out.bam "

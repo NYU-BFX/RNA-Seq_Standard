@@ -99,7 +99,7 @@ fi
 fi
 done
 
-elif [ -f $INP_DIR/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].txt ] && [ $params == "GTC" ]
+elif [ -f `ls $INP_DIR/meta_data/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].txt | head -1` ] && [ $params == "GTC" ]
 then
 	FLAG=1
 	for FILE in `ls $INP_DIR/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].txt`
