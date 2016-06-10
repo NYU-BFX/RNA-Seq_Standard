@@ -41,5 +41,4 @@ Once everything has been set up, you can run the pipeline in two stages:
 	```
         head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize
 	```
-	
-   c. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
+3. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
