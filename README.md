@@ -8,7 +8,7 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 Setting up:
 
-1. You first need to have pre-built STAR reference in your [referenceFiles](referenceFiles/) folder. If you do not have it, please download a "genome.fa" file from public sites. And you also need to have a GTF file in your [referenceFiles](referenceFiles/) folder. This file should be the same GTF file you used to built STAR reference.
+1. You first need to have pre-built STAR reference in your [referenceFiles](referenceFiles/) folder. If you do not have it, please download a "genome.fa" file from public sites.
    Please use the following command to generate STAR Index:    
    
 	```
@@ -23,7 +23,9 @@ Setting up:
 
 5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis.
 
-6. If you have a signature gene list (for example you are doing knockdown of SPOP, then the list should include SPOP and some other related genes) which you would like to check the expression vaule immediately you can define it in the [signature gene list](meta_data/signature.txt). If you have a list of defined targets (for example some ChIP-Seq experiment define a list of direct targets of your knockdown gene), you can define them in the [target gene list](meta_data/target.txt). Or you can keep the existing link to the [signature gene list](meta_data/signature.txt). Please notice the name of the gene in these two file must be consistant with the GTC you use to generate the STAR genome. 
+6. This pipeline use STAR aligner to align the reads. An transcripts annotation GTF format file ("--sjdbGTFfile" option for STAR aligner in the [params](params) file) is required for STAR to extract splice junctions and use them to greatly improve the accuracy of the mapping. And this step also counting number of reads per gene for all the genes in the transcripts annotation GTF file using in the alignment step. The downstream RNA-Seq standard report are all based on this transcript annotation GTF. 
+
+7. If you have a signature gene list (for example you are doing knockdown of SPOP, then the list should include SPOP and some other related genes) which you would like to check the expression vaule immediately you can define it in the [signature gene list](meta_data/signature.txt). If you have a list of defined targets (for example some ChIP-Seq experiment define a list of direct targets of your knockdown gene), you can define them in the [target gene list](meta_data/target.txt). Or you can keep the existing link to the [signature gene list](meta_data/signature.txt). Please notice the name of the gene in these two file must be consistant with the names in the GTF file you used as "--sjdbGTFfile" option when you are doing STAR alignment. 
 
 
 How to run it:
