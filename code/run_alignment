@@ -79,7 +79,7 @@ printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
 #########################
 # run STAR Aligner
 
-params=`cat $PARAMS | grep "^STAR" | cut -f2`
+params=`cat $PARAMS | grep -P "^STAR\t" | cut -f2`
 
 if [ -z "$params" ] || [ -f $BASE_DIR/accepted_hits.bam ]
 then
@@ -142,7 +142,7 @@ params=""
 #######################
 # Remove Duplicates
 
-params=`cat $PARAMS | grep "^MarkDuplicates" | cut -f2`
+params=`cat $PARAMS | grep -P "^MarkDuplicates\t" | cut -f2`
 
 if [ -z "$params" ] || [ -f $BASE_DIR/remove_duplicates.txt ]
 then
@@ -248,7 +248,7 @@ sleep 5
 #########################
 # produce visualization WIG file
 
-params=`cat $PARAMS | grep "^rnaseq_tracks" | cut -f2`
+params=`cat $PARAMS | grep -P "^rnaseq_tracks\t" | cut -f2`
 
 if [ -z "$params" ] || [ -f $BASE_DIR/$SAMPLE.bw ]
 then

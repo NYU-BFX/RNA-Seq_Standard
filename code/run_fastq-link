@@ -35,12 +35,12 @@ SAMPLE=$4
 
 IFS=$'\n'
 
-params=`cat $PARAMS | grep "^fastq-link" | cut -f2`
+params=`cat $PARAMS | grep -P "^fastq-link\t" | cut -f2`
 
 #########################
 # read input
 
-if [ ! -z "`cat $PARAMS | grep "^fastq-link"`" ]
+if [ ! -z "`cat $PARAMS | grep -P "^fastq-link\t"`" ]
 then
 
 FLAG=0

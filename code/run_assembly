@@ -44,7 +44,7 @@ fi
 
 #########################
 mkdir -p $BASE_DIR
-params=`cat $PARAMS | grep "^cufflinks" | cut -f2`
+params=`cat $PARAMS | grep -P "^cufflinks\t" | cut -f2`
 
 
 

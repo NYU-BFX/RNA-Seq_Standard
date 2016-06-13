@@ -13,7 +13,7 @@ OUT_DIR=$2
 INP_DIR=$3
 SAMPLE=$4
 
-params=`cat $PARAMS | grep "^fastqc" | cut -f2`
+params=`cat $PARAMS | grep -P "^fastqc\t" | cut -f2`
 
 if [ ! -z "$params" ]
 then

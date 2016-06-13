@@ -14,7 +14,7 @@ elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
 PARAMS=$1
 OUT_DIR=$2
 
-params=`cat $PARAMS | grep "STAR-Genome" | cut -f2`
+params=`cat $PARAMS | grep -P "^STAR-Genome\t" | cut -f2`
 
 if [ ! -z "$params" ]
 then

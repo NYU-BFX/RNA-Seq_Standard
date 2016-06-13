@@ -33,14 +33,14 @@ if [ ! -d $OUT_DIR ]; then mkdir -p $OUT_DIR; fi
 
 IFS=$'\n'
 
-params=`cat $PARAMS | grep "^fastq-download" | cut -f2`
+params=`cat $PARAMS | grep -P "^fastq-download\t" | cut -f2`
 
 
 
 #########################
 # read input
 
-if [ ! -z "`cat $PARAMS | grep "^fastq-download"`" ]
+if [ ! -z "`cat $PARAMS | grep -P "^fastq-download\t"`" ]
 then
 FLAG=0
 for record in `cat $INP_DIR/sra_info.txt | grep SRX ` 

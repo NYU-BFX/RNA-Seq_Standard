@@ -32,7 +32,7 @@ install_R_packages.r
 ID2NAME=${params%.*}.id2name.txt
 if [ ! -f $ID2NAME ] 
 then
-	gtf_id2name ${params%.*}
+	gtf_id2name ${params}
 fi 
 
 DESeq2.r $params $ID2NAME meta_data/group_info.txt $GROUP raw_count.txt
