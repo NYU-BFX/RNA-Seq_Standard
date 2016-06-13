@@ -1,12 +1,10 @@
 # RNA-Seq Standard
 
 Author: Yixiao Gong
-Date: 06/08/2016
-Version 1.0
 
 RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for Illimina TrueSeq sequencing data. It generates a standard RNA-Seq HTML report which includes alignment quality assessment, sample distance evaluation, PCA plots, dispersion plots, MA plots, raw count/normalized count/fpkm table, pairwise differential expression analysis, top differential expressed genes heatmap, user-defined targets differential expression analysis/heatmap. 
 
-Setting up:
+#### Setting up:
 
 1. You first need to have pre-built STAR reference in your [referenceFiles](referenceFiles/) folder. If you do not have it, please download a "genome.fa" file from public sites.
    Please use the following command to generate STAR Index:    
@@ -28,7 +26,7 @@ Setting up:
 7. If you have a signature gene list (for example you are doing knockdown of SPOP, then the list should include SPOP and some other related genes) which you would like to check the expression vaule immediately you can define it in the [signature gene list](meta_data/signature.txt). If you have a list of defined targets (for example some ChIP-Seq experiment define a list of direct targets of your knockdown gene), you can define them in the [target gene list](meta_data/target.txt). Or you can keep the existing link to the [signature gene list](meta_data/signature.txt). Please notice the name of the gene in these two file must be consistant with the names in the GTF file you used as "--sjdbGTFfile" option when you are doing STAR alignment. 
 
 
-How to run it:
+#### How to run it:
 
 Once everything has been set up, you can run the pipeline in two stages:
 
