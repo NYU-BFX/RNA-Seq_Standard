@@ -16,4 +16,4 @@ cat $TEMP1 | grep " " | key-expand | cols -t 1 0 | awk '{print $1"\t"$1":"$2}' >
 
 cat $TEMP1 | grep -v " " | cols -t 1 0 >> $TEMP2
 
-cat $TEMP2 | sort -k1,1 > ${INP%.*}.id2name.txt
+cat $TEMP2 | sort -k1,1 | mergeuniq -merge | tr ' ' '|' > ${INP%.*}.id2name.txt
