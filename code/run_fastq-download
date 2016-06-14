@@ -8,9 +8,9 @@ source code/custom_bash_profile	# shell settings
 #$ -m a
 
 
-if [ "$#" -lt 3 ]; then
+if [ "$#" -lt 2 ]; then
         printf "\n\n###### Usage\n\n"
-        printf "$0 <PARAMS file> <OUTPUT_DIR> <INPUT_DIR> [Optional: Sample Name] \n\n"
+        printf "$0 <PARAMS file> <OUTPUT_DIR> [Optional: Sample Name] \n\n"
         exit
 fi
 
@@ -23,7 +23,6 @@ date
 # input
 PARAMS=$1
 OUT_DIR=$2
-INP_DIR=$3
 SAMPLE=$4
 
 CWD=`pwd`
@@ -36,20 +35,29 @@ IFS=$'\n'
 params=`cat $PARAMS | grep -P "^fastq-download\t" | cut -f2`
 
 
-
 #########################
 # read input
 
-if [ ! -z "`cat $PARAMS | grep -P "^fastq-download\t"`" ]
+if [ ! -z $params ]
 then
-FLAG=0
+FLAG=1
+
+INP_DIR=$params
+
+########################
+# check for meta_data/sra_info.txt file
+if [ ! -f $INP_DIR/sra_info.txt ]; then
+	printf "\n\nERROR! $INP_DIR/sra_info.txt not exist!\n\n"
+	exit 1
+fi
+
 for record in `cat $INP_DIR/sra_info.txt | grep SRX ` 
 do
-	FLAG=1
 	name_sample=`echo $record | cut -f1`
 	id_sample=`echo $record | cut -f2`
 if [ "$name_sample" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
 then
+	FLAG=0
 	link_sample="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${id_sample:0:6}/$id_sample/"
 	ID_RUNS=(`curl -sS $link_sample | sed -r 's/\s+/\t/g' | cut -f9 `)
 	num_run=0
@@ -93,10 +101,13 @@ cd $CWD
 	done
 fi
 done
-
+else
+	printf "\n\n############SKIPPING fastq-download!\n\n"
+	date
+	exit 0
 fi
 
-if [ $FLAG -ne 1 ] 
+if [ $FLAG -ne 0 ] 
 then
 	printf "\n\nERROR in INPUT file!\n\n"
 	exit 1
