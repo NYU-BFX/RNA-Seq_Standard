@@ -26,7 +26,7 @@ countsData <-read.table(args[5],header=T,row.names=1)
 countsData <- countsData[order(rownames(countsData)),]
 countsData <- countsData[,order(colnames(countsData))]
 sampleName=colnames(countsData)
-sampleData <- data.frame(row.names=sampleName,group[order(group[,2]),2],sampleName)
+sampleData <- data.frame(row.names=sampleName,group[order(group[,group_by]),group_by],sampleName)
 colnames(sampleData) <- c("grp","sampleName")
 (txdb <- makeTxDbFromGFF(gtffile, format="gtf", circ_seqs=character()))
 (ebg <- exonsBy(txdb, by="gene"))
