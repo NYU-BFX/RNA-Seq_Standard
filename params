@@ -6,4 +6,4 @@ STAR	--readFilesCommand zcat --outReadsUnmapped Fastx --outSAMtype BAM SortedByC
 MarkDuplicates	ASSUME_SORTED=false CREATE_INDEX=true REMOVE_DUPLICATES=true
 rnaseq_tracks	referenceFiles/chromInfo.txt
 #cufflinks	-q -M referenceFiles/maskPlussnRNA.gtf -g referenceFiles/RefSeqRefFlat.gtf
-DESeq2 referenceFiles/gencode.v19.annotation.gtf
+DESeq2	referenceFiles/gencode.v19.annotation.gtf
