@@ -143,6 +143,22 @@ geneBarplot <- function(mytitle,data){
   }else{return(NULL)}
 }
 
+
+geneBoxplot <- function(mytitle,data){
+  if(dim(data)[1]!=0){
+    myplot <- ggplot(mydata, aes(x=grp, y=count)) + 
+    geom_boxplot(aes(fill=grp)) + 
+    geom_jitter(size=0.1,width=0.1) +
+    facet_grid(gene~.) +
+    theme(strip.text.y = element_text(size=8, angle=0), legend.title=element_blank(), axis.text.y = element_blank() , axis.ticks.y = element_blank()) +
+    labs(title = paste("FPKM for ", mytitle," Signature Genes",sep="")) +
+    guides(color=FALSE) + 
+    xlab("Gene") + ylab("FPKM") +
+    coord_flip()
+    return(myplot)
+  }else{return(NULL)}
+}
+
 highexp <- mydata %>% group_by(gene) %>% filter(max(count)>100)
 mytitle="High Exp"
 myplot <- geneBarplot(mytitle,highexp)
