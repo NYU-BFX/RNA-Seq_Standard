@@ -15,9 +15,9 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 	
 2. You need to have a "chromInfo.txt" file in your [referenceFiles](referenceFiles/) folder in order to produce RNA-Seq signal tracks. 
 
-3. This pipeline can process GTC generated RNA-Seq data in the "/ifs/data/sequence/results/" folder. Please see the [template](meta_data/20160224.txt). Sample name need to be defined in this file for each of your samples. You will need to generate a .txt file for each of your fastq files directories put them into [meta data](meta_data/) directory.
+3. This pipeline can process GTC generated RNA-Seq data in the "/ifs/data/sequence/results/" folder. Please see the [template](meta_data/20160224.txt). Sample name need to be defined in this file for each of your samples. You will need to generate a .txt file for each of your fastq files directories put them into [meta data](meta_data/) directory and put path of those files into [params](params) file.
 
-4. This pipeline can also perform automatic download from SRA and process the samples. Please see the [template](meta_data/sra_info.txt). Sample names need to be defined in this file for corresponding SRX number. 
+4. This pipeline can also perform automatic download from SRA and process the samples. Please see the [template](meta_data/sra_info.txt). Sample names need to be defined in this file for corresponding SRX numberi. The path of [sra_info.txt](meta_data/sra_info.txt) need to be put into [params](params) file. 
 
 5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis.
 
@@ -33,7 +33,7 @@ Once everything has been set up, you can run the pipeline in two stages:
 1. Submit your jobs for each of your sample using the following command:
    
 	```
-	cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample {}
+	cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample params {}
 	```
 	
 2. After all the samples are processed, you can run the following command to summarize your results:   

@@ -1,9 +1,9 @@
 #STAR-Genome	--genomeFastaFiles referenceFiles/genome.fa 
-#fastq-download	meta_data
-fastq-link	GTC
+fastq-download	meta_data
+fastq-link	meta_data/20160224.txt #meta_data/sra_info.txt
 #fastqc	meta_data/sra_info.txt
 STAR	--readFilesCommand zcat --outReadsUnmapped Fastx --outSAMtype BAM SortedByCoordinate --outFilterMultimapNmax 1 --genomeDir referenceFiles/STAR_Reference --sjdbGTFfile referenceFiles/gencode.v19.annotation.gtf
 MarkDuplicates	ASSUME_SORTED=false CREATE_INDEX=true REMOVE_DUPLICATES=true
 rnaseq_tracks	referenceFiles/chromInfo.txt
-#cufflinks	-q -M referenceFiles/maskPlussnRNA.gtf -g referenceFiles/RefSeqRefFlat.gtf
+#cufflinks	-q -M referenceFiles/maskPlussnRNA.gtf -g referenceFiles/gencode.v19.annotation.gtf
 DESeq2	referenceFiles/gencode.v19.annotation.gtf
