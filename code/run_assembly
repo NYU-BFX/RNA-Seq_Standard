@@ -64,7 +64,11 @@ cufflinks -p $NSLOTS --library-type=fr-${STRAND} $params -o $BASE_DIR $INP_DIR/$
 "
 #printf "\n\n $CMD \n\n"
 printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
-eval $CMD
+
+
+source code/custom_bash_profile
+cufflinks -p $NSLOTS --library-type=fr-${STRAND} $params -o $BASE_DIR $INP_DIR/$SAMPLE/accepted_hits.bam
+
 
 fi
 

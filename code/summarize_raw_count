@@ -10,4 +10,4 @@ do
 	INDEX=${INDEX}","${i}
 done
 
-paste $@ | cut -f${INDEX} > raw_count.txt
+paste $@ | cut -f${INDEX} 

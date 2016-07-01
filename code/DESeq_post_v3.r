@@ -23,9 +23,11 @@ toNumeric<-function(myMatrix){
 fpkm_table=toNumeric(fpkm_table)
 norm_count=toNumeric(norm_count)
 
-outdir=basename(dirname(dataset))
-dir.create(outdir)
-htmlRep <- HTMLReport(shortName = outdir, title="RNA-Seq Experiment Standard Report", reportDirectory = outdir)
+longdir=dirname(dataset)
+
+if(grep("/",longdir)){outdir=basename(longdir)}else{outdir=longdir}
+dir.create(longdir,showWarnings=F)
+htmlRep <- HTMLReport(shortName = outdir, title="RNA-Seq Experiment Standard Report", reportDirectory = longdir)
 
 
 # signature as goldern standard to be tested
@@ -53,7 +55,7 @@ align_reads <- function(x){
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     ggtitle("b. Alignment Category Reads") +
     xlab("") + ylab("Number of Reads in Millions") +
-    theme(axis.title = element_text(size=8),axis.text.y = element_blank(),axis.text.x = element_text(size=5),plot.title = element_text(size=8),legend.title=element_blank(),legend.text=element_text(size=8),axis.ticks.y=element_blank(), axis.line.y=element_blank()) +
+    theme(axis.title = element_text(size=8),axis.text.y = element_blank(),plot.title = element_text(size=8),legend.title=element_blank(),legend.text=element_text(size=8),axis.ticks.y=element_blank(), axis.line.y=element_blank()) +
     coord_flip()
     return(myplot)
 }
@@ -68,7 +70,7 @@ align_PCT <- function(x){
     ggtitle("a. Alignment Category Percentage") +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     xlab("") + ylab("Percentage of Reads") +
-    theme(axis.title = element_text(size=8),axis.text.y = element_text(size=2.8,angle=0),axis.text.x = element_text(size=5),plot.title = element_text(size=8)) +
+    theme(axis.title = element_text(size=8),axis.text.y = element_text(angle=0),plot.title = element_text(size=8)) +
     guides(fill=FALSE) +
     coord_flip()
     return(myplot)
@@ -92,10 +94,10 @@ splDistPlot <- function(mymatrix){
   rownames(sampleDistMatrix) <- colnames(mymatrix)
   colnames(sampleDistMatrix) <- colnames(mymatrix)
   colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
-  png(filename=paste(outdir,"/figures",outdir,"/Sample_Distance.png",sep=""))
+  png(filename=paste(longdir,"/figures",outdir,"/Sample_Distance.png",sep=""))
   pheatmap(sampleDistMatrix, clustering_distance_rows=sampleDists, clustering_distance_cols=sampleDists, col=colors, main="Distance Between Samples")
   dev.off()
-  pdf(file=paste(outdir,"/figures",outdir,"/Sample_Distance.pdf",sep=""),onefile=F)
+  pdf(file=paste(longdir,"/figures",outdir,"/Sample_Distance.pdf",sep=""),onefile=F)
   pheatmap(sampleDistMatrix, clustering_distance_rows=sampleDists, clustering_distance_cols=sampleDists, col=colors, main="Distance Between Samples")
   dev.off()
 }
@@ -146,27 +148,27 @@ geneBarplot <- function(mytitle,data){
 
 geneBoxplot <- function(mytitle,data){
   if(dim(data)[1]!=0){
-    myplot <- ggplot(mydata, aes(x=grp, y=count)) + 
-    geom_boxplot(aes(fill=grp)) + 
-    geom_jitter(size=0.1,width=0.1) +
-    facet_grid(gene~.) +
-    theme(strip.text.y = element_text(size=8, angle=0), legend.title=element_blank(), axis.text.y = element_blank() , axis.ticks.y = element_blank()) +
-    labs(title = paste("FPKM for ", mytitle," Signature Genes",sep="")) +
-    guides(color=FALSE) + 
-    xlab("Gene") + ylab("FPKM") +
-    coord_flip()
+    myplot <- ggplot(data, aes(x=grp, y=count)) +
+      geom_boxplot(aes(fill=grp,color=grp)) +
+      facet_grid(gene~.) +
+      theme(strip.text.y = element_text(size=8, angle=0), legend.title=element_blank(), axis.text.y = element_blank() , axis.ticks.y = element_blank(), axis.line.y = element_blank()) +
+      labs(title = paste("FPKM for ", mytitle," Signature Genes",sep="")) +
+      guides(color=FALSE) +
+      xlab("Gene") + ylab("FPKM") +
+      coord_flip()+ 
+      stat_summary(geom = "crossbar", fatten=0, color="white", fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) })
     return(myplot)
   }else{return(NULL)}
 }
 
-highexp <- mydata %>% group_by(gene) %>% filter(max(count)>100)
+highexp <- mydata %>% group_by(gene) %>% filter(max(count)>100) %>% ungroup
 mytitle="High Exp"
-myplot <- geneBarplot(mytitle,highexp)
+myplot <- geneBoxplot(mytitle,highexp)
 if(!is.null(myplot)){publish(myplot, htmlRep,name=paste("FPKM for ",mytitle," Signature Genes",sep=""))}
 
-lowexp <- mydata %>% group_by(gene) %>% filter(max(count)<100)
+lowexp <- mydata %>% group_by(gene) %>% filter(max(count)<100) %>% ungroup
 mytitle="Low Exp"
-myplot <- geneBarplot(mytitle,lowexp)
+myplot <- geneBoxplot(mytitle,lowexp)
 if(!is.null(myplot)){publish(myplot, htmlRep,name=paste("FPKM for ",mytitle," Signature Genes",sep=""))}
 
 publish("FPKM Table:", htmlRep)
@@ -192,10 +194,10 @@ publish(hwrite("Download", link = paste("../raw_count.txt",sep="")), htmlRep)
 #plot(res$log2FoldChange,-log(res$padj,10),main="Volcano Plot of FDR-adjusted P-values",pch=20,cex=0.4,xlab="log2(FC of mean of normalized counts)",ylab="-log10(adj P-value)")
 
 # Dispersion Plot. First, gene-wise MLEs are obtained using only the respective gene’s data (black dots). Then, a curve (red) is fit to the MLEs to capture the overall trend of dispersion-mean dependence. This fit is used as a prior mean for a second estimation round, which results in the final MAP estimates of dispersion (arrow heads). This can be understood as a shrinkage (along the blue arrows) of the noisy gene-wise estimates toward the consensus represented by the red line. The black points circled in blue are detected as dispersion outliers and not shrunk toward the prior (shrinkage would follow the dotted line). 
-png(filename=paste(outdir,"/figures",outdir,"/Dispersion_Plot.png",sep=""))
+png(filename=paste(longdir,"/figures",outdir,"/Dispersion_Plot.png",sep=""))
 plotDispEsts(dds, main="Dispersion Plot")
 dev.off()
-pdf(file=paste(outdir,"/figures",outdir,"/Dispersion_Plot.pdf",sep=""))
+pdf(file=paste(longdir,"/figures",outdir,"/Dispersion_Plot.pdf",sep=""))
 plotDispEsts(dds, main="Dispersion Plot")
 dev.off()
 himg <- hwriteImage(paste("figures",outdir,"/Dispersion_Plot.png",sep=""),link=paste("figures",outdir,"/Dispersion_Plot.pdf",sep=""))
@@ -206,7 +208,7 @@ publish(paste("Analysis for Different Comparison Groups ",sep=""), htmlRep)
 for (i in 1:dim(comparisons)[1]){
   preprocessing="rld"
   print(comparisons[i,])
-  myreport=summarize_comparison(outdir,signature,target,"DE",comparisons[i,],preprocessing,fpkm_table)
+  myreport=summarize_comparison(longdir,signature,target,"DE",comparisons[i,],preprocessing,fpkm_table)
   publish(hwrite(myreport, link = paste(myreport,"/","report.html",sep="")), htmlRep)
 }
 

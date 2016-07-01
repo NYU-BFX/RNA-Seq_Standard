@@ -22,7 +22,7 @@ date
 #########################
 # input
 PARAMS=$1
-OUT_DIR=$2
+OUT_DIR=`echo $2 | sed 's/\/\//\//g'`
 INP_DIR=$3
 SAMPLE=$4
 
@@ -42,6 +42,7 @@ then
 for FILE in $params
 do
 	mylink=`head -1 $FILE`
+echo $mylink
 	if [ -d $mylink ]
 	then
 		dirname=`basename $FILE | sed 's/.txt//g'`
@@ -49,12 +50,12 @@ do
 		for record in `cat $FILE | grep -v "\/"`
 		do
 			sample_name=`echo $record | cut -f1`		
-			if [ ! -d $OUT_DIR/$sample_name ]
-			then
-				mkdir -p $OUT_DIR/$sample_name
-			fi
 			if [ "$sample_name" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
 			then
+				if [ ! -d $OUT_DIR/$sample_name ]
+				then
+					mkdir -p $OUT_DIR/$sample_name
+				fi
 				identifier=`echo $record | cut -f2`
 				printf "\n\n***** Linking $sample_name To $mylink/${identifier}*...\n"
 				for myfastq in `ls $OUT_DIR/$dirname/* | grep "$identifier"`

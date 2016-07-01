@@ -14,16 +14,25 @@ elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
 
 PARAMS=$1
 OUT_DIR=$2
-GROUP=$3
+group_info=$3
+GROUP=$4
+group_sheet=`basename $group_info | sed 's/\.txt$//g'`
 
 params=`cat $PARAMS | grep "^DESeq2" | cut -f2`
 
 cd $OUT_DIR
 
+mkdir -p $group_sheet
 
-align_summary alignment/*/STAR.Log.final.out > align_summary.txt
+if [ ! -f $group_sheet/align_summary.txt ]
+then
+align_summary `cat $group_info | cut -f1 | skipn 1 | sed 's/^/alignment\//g' | sed 's/$/\/STAR.Log.final.out/g' | tr '\n' ' '` > $group_sheet/align_summary.txt
+fi
 
-summarize_raw_count alignment/*/STAR.count.txt > raw_count.txt
+if [ ! -f $group_sheet/raw_count.txt ]
+then
+summarize_raw_count `cat $group_info | cut -f1 | skipn 1 | sed 's/^/alignment\//g' | sed 's/$/\/STAR.count.txt/g' | tr '\n' ' '` > $group_sheet/raw_count.txt
+fi
 
 #qsub -b Y -cwd -j Y -pe threaded 8 /local/apps/R/3.2.0/bin/Rscript ~/utilities/yixiao_scripts/count2fpkm.r ../referenceFiles/Homo_sapiens.GRCh37.\?\?.gtf ../referenceFiles/Homo_sapiens.GRCh37.\?\?.id2name.txt ../alignment/raw_count.txt
 
@@ -35,12 +44,12 @@ then
 	gtf_id2name ${params}
 fi 
 
-DESeq2.r $params $ID2NAME meta_data/group_info.txt $GROUP raw_count.txt
+DESeq2.r $params $ID2NAME $group_info $GROUP $group_sheet/raw_count.txt
 
-DESeq_post_v3.r $GROUP/${GROUP}_Rscript.RData align_summary.txt meta_data/signature.txt meta_data/target.txt
+DESeq_post_v3.r $group_sheet/$GROUP/${GROUP}_Rscript.RData $group_sheet/align_summary.txt meta_data/signature.txt meta_data/target.txt
 
-rm -rf align_summary.txt Rplots.pdf
+rm -rf Rplots.pdf
 
-zip -r ${GROUP}_Report.zip $GROUP fpkm_table.txt norm_count.txt raw_count.txt
+#zip -r ${group_sheet}_Report.zip $group_sheet
 
-ln -s $OUT_DIR/${GROUP}_Report.zip ../../${GROUP}_Report.zip
+#ln -s $OUT_DIR/${group_sheet}_Report.zip ../../${group_sheet_Report}.zip

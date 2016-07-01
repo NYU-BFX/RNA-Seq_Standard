@@ -8,12 +8,12 @@ if [ -z $NSLOTS ]
 then
         NSLOTS=6
 fi
-
-SAMPLE=$1
+params=$1
+SAMPLE=$2
 
 FLAG=0
-#if [ -z "$tmp_free" ] || [ -z "$tmp_token" ]
-#then
+if [ ! -z `qstat -j $JOB_ID | grep "tmp_free" | sed 's/ +//g'` ]
+then
 	for CONTENT in `ls -d * | grep -v pipeline`
 	do
 		ln -s $CWD/$CONTENT $TMP/$CONTENT
@@ -30,9 +30,9 @@ FLAG=0
 	done
 	cd $TMP
 	FLAG=1
-#else 
-#	TMP=$CWD
-#fi
+else 
+	TMP=$CWD
+fi
 
 
 
@@ -42,25 +42,24 @@ date
 echo
 
 echo "###### Downloading: $SAMPLE"
-run_fastq-download params pipeline/download meta_data $SAMPLE
-status=$?
+run_fastq-download $params pipeline/download meta_data $SAMPLE
 if [ $FLAG -eq 1 ]; then rsync -rl pipeline/download/ $CWD/pipeline/download/; fi
+status=$?
 if [ $status -ne 0 ]; then exit 1; fi
 
 echo "###### Linking: $SAMPLE"
-run_fastq-link params pipeline/fastq pipeline/download $SAMPLE
+run_fastq-link $params pipeline/fastq pipeline/download $SAMPLE
 status=$?
 if [ $FLAG -eq 1 ]; then rsync -rl pipeline/fastq/ $CWD/pipeline/fastq/; fi
 if [ $status -ne 0 ]; then exit 1; fi
-
 echo "###### Alignning: $SAMPLE"
-run_alignment params pipeline/alignment pipeline/fastq $SAMPLE
+run_alignment $params pipeline/alignment pipeline/fastq $SAMPLE
 status=$?
 if [ $FLAG -eq 1 ]; then rsync -rl pipeline/alignment/ $CWD/pipeline/alignment/; fi
 if [ $status -ne 0 ]; then exit 1; fi
 
 echo "###### Assemblying: $SAMPLE"
-run_assembly params pipeline/cufflinks pipeline/alignment $SAMPLE
+run_assembly $params pipeline/cufflinks pipeline/alignment $SAMPLE
 status=$?
 if [ $FLAG -eq 1 ]; then rsync -rl pipeline/cufflinks/ $CWD/pipeline/cufflinks/; fi
 if [ $status -ne 0 ]; then exit 1; fi

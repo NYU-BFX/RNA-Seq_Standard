@@ -19,7 +19,7 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 4. This pipeline can also perform automatic download from SRA and process the samples. Please see the [template](meta_data/sra_info.txt). Sample names need to be defined in this file for corresponding SRX numberi. The path of [sra_info.txt](meta_data/sra_info.txt) need to be put into [params](params) file. 
 
-5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis.
+5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis. You can have multiple [group information file](meta_data/group_info.txt) with different names.
 
 6. This pipeline use STAR aligner to align the reads. An transcripts annotation GTF format file ("--sjdbGTFfile" option for STAR aligner in the [params](params) file) is required for STAR to extract splice junctions and use them to greatly improve the accuracy of the mapping. And this step also counting number of reads per gene for all the genes in the transcripts annotation GTF file using in the alignment step. The downstream RNA-Seq standard report are all based on this transcript annotation GTF. 
 
@@ -36,9 +36,9 @@ Once everything has been set up, you can run the pipeline in two stages:
 	cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample params {}
 	```
 	
-2. After all the samples are processed, you can run the following command to summarize your results:   
+2. After all the samples are processed, you can run the following command to summarize your results (You need to run this command for all your group_info.txt files.):   
    
 	```
-        head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize
+        head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize params
 	```
 3. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
