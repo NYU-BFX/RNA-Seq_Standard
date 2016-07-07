@@ -39,6 +39,6 @@ Once everything has been set up, you can run the pipeline in two stages:
 2. After all the samples are processed, you can run the following command to summarize your results (You need to run this command for all your group_info.txt files.):   
    
 	```
-        head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize params
+        head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize meta_data/group_info.txt
 	```
 3. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
