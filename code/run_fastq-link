@@ -42,11 +42,10 @@ then
 for FILE in $params
 do
 	mylink=`head -1 $FILE`
-echo $mylink
 	if [ -d $mylink ]
 	then
 		dirname=`basename $FILE | sed 's/.txt//g'`
-		ln -s $mylink $OUT_DIR/$dirname
+		ln -sf $mylink $OUT_DIR/$dirname
 		for record in `cat $FILE | grep -v "\/"`
 		do
 			sample_name=`echo $record | cut -f1`		
@@ -61,7 +60,7 @@ echo $mylink
 				for myfastq in `ls $OUT_DIR/$dirname/* | grep "$identifier"`
 				do
 					suffix=`echo $myfastq | sed 's/'$identifier'/\t/g' | cut -f2`
-					ln -s ../$dirname/`basename $myfastq` $OUT_DIR/$sample_name/${sample_name}${suffix}
+					ln -sf ../$dirname/`basename $myfastq` $OUT_DIR/$sample_name/${sample_name}${suffix}
 				done
 			fi			
 		done

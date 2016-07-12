@@ -12,7 +12,7 @@ params=$1
 SAMPLE=$2
 
 FLAG=0
-if [ ! -z `qstat -j $JOB_ID | grep "tmp_free" | sed 's/ +//g'` ]
+if [ ! -z `qstat -j $JOB_ID | grep "tmp_free" | sed 's/ +//g' | cut -d ' ' -f1` ]
 then
 	for CONTENT in `ls -d * | grep -v pipeline`
 	do

@@ -109,7 +109,7 @@ fi
 
 if [ $FLAG -ne 0 ] 
 then
-	printf "\n\nERROR in INPUT file!\n\n"
+	printf "\n\nNOTHING to download!\n\n"
 	exit 1
 fi
 
