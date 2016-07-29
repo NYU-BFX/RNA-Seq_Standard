@@ -1,5 +1,7 @@
 #!/bin/bash
 
+if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
+
 if [ "$#" -ne 1 ]; then
         printf "\n\n###### Usage\n\n"
         printf "$0 <INPUT GTF file>\n\n"

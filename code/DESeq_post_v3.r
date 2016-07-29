@@ -53,7 +53,7 @@ align_reads <- function(x){
     ggplot(x,aes(x=V1,y=V3,fill=V2)) +
     geom_bar(stat="identity",position="stack") +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
-    ggtitle("b. Alignment Category Reads") +
+    ggtitle("B. Alignment Category Reads") +
     xlab("") + ylab("Number of Reads in Millions") +
     theme(axis.title = element_text(size=8),axis.text.y = element_blank(),plot.title = element_text(size=8),legend.title=element_blank(),legend.text=element_text(size=8),axis.ticks.y=element_blank(), axis.line.y=element_blank()) +
     coord_flip()
@@ -67,7 +67,7 @@ align_PCT <- function(x){
   x=x[order(x$V1,x$V2),]
     myplot <- ggplot(x,aes(x=V1,y=V3,fill=V2)) +
     geom_bar(stat="identity",position="stack") +
-    ggtitle("a. Alignment Category Percentage") +
+    ggtitle("A. Alignment Category Percentage") +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     xlab("") + ylab("Percentage of Reads") +
     theme(axis.title = element_text(size=8),axis.text.y = element_text(angle=0),plot.title = element_text(size=8)) +

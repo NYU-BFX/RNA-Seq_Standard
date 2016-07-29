@@ -1,12 +1,6 @@
 #!/bin/bash
 
-source code/custom_bash_profile	# shell settings
-
-#$ -S /bin/bash
-#$ -cwd
-#$ -M yixiao.gong@nyumc.org
-#$ -m a
-
+if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
 
 if [ "$#" -lt 3 ]; then
 	printf "\n\n###### Usage\n\n"
