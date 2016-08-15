@@ -30,7 +30,7 @@ for file in ${FILE_LIST[@]}
 do
 	IFS=" "
 	echo "Preprocessing alignment $file ..."
-	samtools view $file | grep -w 'NH:i:1' | genomic_regions reg -v >> $tmp
+	samtools view $file | grep -w 'NH:i:1' | genomic_regions reg >> $tmp
 done
 
 # compute scaling factor (for conversion to RPKMs)
@@ -47,11 +47,10 @@ cat $CHROMINFO | awk '{print $1"\t0\t"$2}' > $OUT_DIR/genome.bed
 
 echo "Creating bigWig file..."
 cat $tmp \
-	| genomic_regions split -v \
+	| genomic_regions split \
 	| genomic_scans counts -op c -i -min $min_reads -w $win_size -d $win_dist -g $OUT_DIR/genome.bed \
 	| genomic_regions center \
 	| genomic_regions wig -t "${TITLE}" -scale $scale -s $win_dist -p $pos -c $COLOR -o 'alwaysZero=on' \
-	| awk '{if($1~/[0-9]+/){print $1"\t-"$2}else{print}}' \
 	| wigToBigWig stdin $CHROMINFO $OUT_DIR/${TITLE}.bw
 
 # clean-up
