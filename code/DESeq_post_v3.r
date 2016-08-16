@@ -124,10 +124,13 @@ publish(myplot, htmlRep,name="PCA Plot on Known Genes")
 
 # Plot FPKM for signature gene
 mydata=fpkm_table[signature,]
+mydata.colnames=c("Gene",colnames(mydata))
 mydata=data.frame(cbind(Gene=rownames(mydata),mydata))
+colnames(mydata)=mydata.colnames
 mydata=melt(mydata,id.vars=1, factorsAsStrings=F)
-mydata<-mydata%>%left_join(data.frame(colData(dds)),by=c("variable"="sampleName"))%>%arrange(Gene)
-colnames(mydata)=c("gene","sampleName","count","grp")
+mydata<-mydata%>%left_join(data.frame(colData(dds)),by=c("variable"="sampleName"))
+colnames(mydata)=c("gene","sampleName","count","grp","sizeFactor")
+mydata<-mydata%>%arrange(gene)
 mydata=mydata[,c(1,3,4,2)]
 mydata<-mydata %>% mutate(count=as.numeric(as.character(count)),sampleName=as.factor(sampleName))
 
