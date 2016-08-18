@@ -28,17 +28,19 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 #### How to run it:
 
-Once everything has been set up, you can run the pipeline in two stages:
+Once everything has been set up, you can run the pipeline as following:
 
-1. Submit your jobs for each of your sample using the following command:
+1. Submit your jobs for each of your sample using the following command if you are using SGE:
    
 	```
-	cut -f1 meta_data/group_info.txt | code/skipn 1 | xargs -n1 -I {} qsub -hard -pe threaded 8 -l tmp_free=190G -l tmp_token=24G -j Y -b Y -cwd -N {} -o {}.out code/By_Sample params {}
+	qsub -b Y -cwd -pe threaded 1 ./run.bash inputs/params.bash inputs/group_info.txt
+	```
+	* If you are using another job scheduler, you can submit the follwoing command using your own job scheduler:
+   
+	```
+	./run.bash inputs/params.bash inputs/group_info.txt
 	```
 	
-2. After all the samples are processed, you can run the following command to summarize your results (You need to run this command for all your group_info.txt files.):   
-   
-	```
-        head -1 meta_data/group_info.txt | cut -f2- | xargs -n1 code/Summarize params pipeline/summarize meta_data/group_info.txt
-	```
-3. The summary html report will be generated in the program directory and you need to unzip and open the html file for the report. 
+2. If you have multiple group_info.txt file, you need to run the command for all your group_info.txt files.  
+
+3. 2. The summary html report will be generated in [pipeline/report](pipeline/report) folder.
