@@ -33,14 +33,14 @@ Once everything has been set up, you can run the pipeline as following:
 1. Submit your jobs for each of your sample using the following command if you are using SGE:
    
 	```
-	qsub -b Y -cwd -pe threaded 1 ./run.bash inputs/params.bash inputs/group_info.txt
+	qsub -b Y -cwd -pe threaded 1 ./run.bash params meta_data/group_info.txt
 	```
 	* If you are using another job scheduler, you can submit the follwoing command using your own job scheduler:
    
 	```
-	./run.bash inputs/params.bash inputs/group_info.txt
+	./run.bash params meta_data/group_info.txt
 	```
 	
 2. If you have multiple group_info.txt file, you need to run the command for all your group_info.txt files.  
 
-3. 2. The summary html report will be generated in [pipeline/report](pipeline/report) folder.
+3. 2. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder.
