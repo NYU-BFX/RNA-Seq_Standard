@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
+source code/custom-bashrc
 
 
 if [ "$#" -lt 2 ]; then
@@ -87,9 +87,9 @@ then
 cd $OUT_DIR/$name_sample/
 
 printf "\n\n***** Downloading $id_sample/${id_file} into $OUT_DIR/$name_sample Using fastq-dump.2...\n"
-echo "../code/utilities/sratoolkit/fastq-dump.2 --tries 10 --split-files -A "$id_file" -gzip" >> run.bash
+echo "../code/utilities/sratoolkit/fastq-dump.2.4.2 --tries 10 --split-files -A "$id_file" -gzip" >> run.bash
 pwd
-../code/utilities/sratoolkit/fastq-dump.2 --tries 10 --split-files -A $id_file -gzip
+../code/utilities/sratoolkit/fastq-dump.2.4.2 --tries 10 --split-files -A $id_file -gzip
 
 cd $CWD
 		done

@@ -1,4 +1,4 @@
-#STAR-Genome	--genomeFastaFiles referenceFiles/genome.fa 
+STAR-Genome	--genomeFastaFiles referenceFiles/genome.fa 
 fastq-download	meta_data
 fastq-link	meta_data/20160425.txt #meta_data/sra_info.txt
 #fastqc	meta_data/sra_info.txt

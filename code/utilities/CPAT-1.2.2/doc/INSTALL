@@ -1,0 +1,26 @@
+Installation guide for CPAT (Coding Potential Assessing Tool))
+
+Prerequisite:
+   * gcc
+   * python2.7
+   * numpy
+   * If your computer can not connnect to internet, nose>= 0.10.4 and distribute-0.6.10 are also required. 
+   * R
+   * Xcode (MAC OS)
+Below is an example of installing CPAT on Linux system using BASH. You need to change '--root' directory, PYTHONPATH and PATH accordingly
+   * tar zxf CPAT-VERSION.tar.gz
+   * cd CPAT-VERSION
+   * python setup.py install 					#will install CPAT in system level. require root previledge
+   * python setup.py install --root=/home/user/CPAT 		#will install CPAT at user specified location
+   * export PYTHONPATH=/home/user/CPAT/usr/local/lib/python2.7/site-packages:$PYTHONPATH. #setup PYTHONPATH, so that CDSP knows where to import modules
+   * export PATH=/home/user/CPAT/usr/local/bin:$PATH 	#setup PATH, so that system knows where to find executable file 
+
+NOTE:
+    * If the installation failed with error like: /usr/bin/ld: cannot find -lz, you may need to install a shared zlib library on your system.
+
+Online Manual:
+
+http://rna-cpat.sourceforge.net/
+
+Contact:
+wangliguo78@gmail.com 

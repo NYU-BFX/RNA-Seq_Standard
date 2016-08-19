@@ -1,0 +1,9 @@
+pysam
+ctabix
+psyco_full
+csamtools
+cpmodule
+cvcf
+bx_extras
+bx
+TabProxies

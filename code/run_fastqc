@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
+source code/custom-bashrc
 
 if [ "$#" -lt 2 ]; then
         printf "\n\n###### Usage\n\n"

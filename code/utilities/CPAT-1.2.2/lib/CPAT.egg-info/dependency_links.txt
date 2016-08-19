@@ -1,0 +1,2 @@
+http://bitbucket.org/james_taylor/bx-python/wiki/Home
+http://wwwfgu.anat.ox.ac.uk/~andreas/documentation/samtools/contents.html

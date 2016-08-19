@@ -1,0 +1,20 @@
+#!/bin/bash
+
+
+PS1="[\u@\h \W]\$ "
+
+
+PATH=code/:code/bin/:code/utilities/:code/utilities/STAR/:code/utilities/sratoolkit/:code/utilities/cufflinks/:code/utilities/CPAT/:code/utilities/fastqc/:code/utilities/subread:$PATH
+
+PYTHONPATH=code/utilities/utilities/CPAT/lib/:$PYTHONPATH
+
+export LC_ALL=C
+export PATH
+export PYTHONPATH
+
+export PERL5LIB=$HOME/lib
+export EDITOR="/usr/local/bin/mate -w"
+
+module load samtools/0.1.19
+module load r/3.3.0
+module load python/2.7

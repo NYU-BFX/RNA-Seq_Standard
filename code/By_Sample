@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
+source code/custom-bashrc
 
 CWD=`pwd`
 
@@ -10,6 +10,10 @@ then
 fi
 params=$1
 SAMPLE=$2
+
+
+if [ `cat $CWD/${SAMPLE}.out | wc -l` -eq 1 ]; then exec >> $CWD/$SAMPLE.out;else exec > $CWD/$SAMPLE.out; fi
+exec 2>&1
 
 FLAG=0
 if [ ! -z `qstat -j $JOB_ID | grep "tmp_free" | sed 's/ +//g' | cut -d ' ' -f1` ]

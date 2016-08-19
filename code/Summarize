@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -f code/custom_bash_profile ]; then source code/custom_bash_profile; fi # shell settings
+source code/custom-bashrc
 
 if [ "$#" -ne 4 ] && [ "$#" -ne 3 ]
 then
@@ -19,6 +19,9 @@ GROUP=$4
 group_sheet=`basename $group_info | sed 's/\.txt$//g'`
 
 params=`cat $PARAMS | grep "^DESeq2" | cut -f2`
+
+if [ `cat ${GROUP}.out | wc -l` -eq 1 ]; then exec >> $GROUP.out;else exec > $GROUP.out; fi
+exec 2>&1
 
 cd $OUT_DIR
 

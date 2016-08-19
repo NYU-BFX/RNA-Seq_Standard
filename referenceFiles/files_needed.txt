@@ -1,3 +1,0 @@
-genome.fa
-chromInfo.txt
-gene.gtf
