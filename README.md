@@ -43,4 +43,4 @@ Once everything has been set up, you can run the pipeline as following:
 	
 2. If you have multiple group_info.txt file, you need to run the command for all your group_info.txt files.  
 
-3. 2. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder.
+3. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder.
