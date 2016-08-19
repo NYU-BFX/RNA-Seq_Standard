@@ -228,7 +228,9 @@ else
 	CMD="
 cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | sort -k2,2nr | head -5000 | tail -3000 | awk '{if((\$3+1)/(\$4+1)<0.2){print \"firststrand\"}else if((\$3+1)/(\$4+1)>5){print \"secondstrand\"}else{print \"unstranded\"}}' | sort | uniq -c | sed -E 's/^\s+//g' | awk '{print \$2\"\t\"\$1}' | sort -k2,2nr > $BASE_DIR/$STRAND.tag;
 echo -e \"Gene\t${NAME}\" > ${STAR_PREFIX}count.txt;
-cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | cut -f1,${STR} >> ${STAR_PREFIX}count.txt
+cat ${STAR_PREFIX}ReadsPerGene.out.tab | skipn 4 | cut -f1,${STR} >> ${STAR_PREFIX}count.txt;
+echo $STRAND > $BASE_DIR/sequencing_info.txt;
+head -8 $BASE_DIR/remove_duplicates.txt | tail -1 | awk '{print (\$3>\$4?\"single-end\":\"pair-end\")}' >> $BASE_DIR/sequencing_info.txt
 "
 #        printf "\n\n$CMD\n\n"
 	printf "\n\n***** Extracting Counts...\n"
