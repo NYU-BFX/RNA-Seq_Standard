@@ -40,6 +40,7 @@ sampleName=colnames(countsData)
 sampleData <- group[,c(which(colnames(group)==group_by),1)]
 rownames(sampleData)=group[,1]
 colnames(sampleData) <- c("grp","sampleName")
+sampleData <- sampleData[order(rownames(sampleData)),]
 (txdb <- makeTxDbFromGFF(gtffile, format="gtf", circ_seqs=character()))
 (ebg <- exonsBy(txdb, by="gene"))
 
