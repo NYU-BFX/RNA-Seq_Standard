@@ -128,14 +128,14 @@ mydata.colnames=c("Gene",colnames(mydata))
 mydata=data.frame(cbind(Gene=rownames(mydata),mydata))
 colnames(mydata)=mydata.colnames
 mydata=melt(mydata,id.vars=1, factorsAsStrings=F)
-cat("############################ OK till now/n")
-mydata<-mydata%>%left_join(data.frame(colData(dds)),by=c("variable"="sampleName"))%>%select(-replaceable)
+cat("############################ OK till now\n")
+mydata<-mydata%>%left_join(data.frame(colData(dds)),by=c("variable"="sampleName"))%>%select(Gene,variable,value,grp,sizeFactor)
 colnames(mydata)=c("gene","sampleName","count","grp","sizeFactor")
 mydata<-mydata%>%arrange(gene)
 mydata=mydata[,c(1,3,4,2)]
 mydata<-mydata %>% mutate(count=as.numeric(as.character(count)),sampleName=as.factor(sampleName))
 
-cat("############################ OK till now/n")
+cat("############################ OK till now\n")
 geneBarplot <- function(mytitle,data){
   if(dim(data)[1]!=0){
     myplot <- ggplot(data,aes(x=sampleName,y=count,fill=grp)) + 
@@ -174,7 +174,7 @@ if(!is.null(myplot)){publish(myplot, htmlRep,name=paste("FPKM for ",mytitle," Si
 lowexp <- mydata %>% group_by(gene) %>% filter(max(count)<100) %>% ungroup
 mytitle="Low Exp"
 myplot <- geneBoxplot(mytitle,lowexp)
-cat("############################ OK till now/n")
+cat("############################ OK till now\n")
 if(!is.null(myplot)){publish(myplot, htmlRep,name=paste("FPKM for ",mytitle," Signature Genes",sep=""))}
 
 publish("FPKM Table:", htmlRep)
@@ -216,6 +216,7 @@ for (i in 1:dim(comparisons)[1]){
   print(comparisons[i,])
   myreport=summarize_comparison(longdir,signature,target,"DE",comparisons[i,],preprocessing,fpkm_table)
   publish(hwrite(myreport, link = paste(myreport,"/","report.html",sep="")), htmlRep)
+}
 }
 finish(htmlRep)
 
