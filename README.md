@@ -47,4 +47,5 @@ Once everything has been set up, you can run the pipeline as following:
 
 #### Example of the html report:
 [hESC Report By CellType](http://www.hpc.med.nyu.edu/~gongy05/RNA-Seq_Standard/H1_Cells/By_CellType/By_CellType.html)
+
 [hESC Report By Tissue](http://www.hpc.med.nyu.edu/~gongy05/RNA-Seq_Standard/H1_Cells/By_Tissue/By_Tissue.html)
