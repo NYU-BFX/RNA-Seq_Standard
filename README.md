@@ -44,3 +44,7 @@ Once everything has been set up, you can run the pipeline as following:
 2. If you have multiple group_info.txt file, you need to run the command for all your group_info.txt files.  
 
 3. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder.
+
+#### Example of the html report:
+[hESC Report By CellType](http://www.hpc.med.nyu.edu/~gongy05/RNA-Seq_Standard/H1_Cells/By_CellType/By_CellType.html)
+[hESC Report By Tissue](http://www.hpc.med.nyu.edu/~gongy05/RNA-Seq_Standard/H1_Cells/By_Tissue/By_Tissue.html)
