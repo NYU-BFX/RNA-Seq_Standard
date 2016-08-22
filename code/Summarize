@@ -46,7 +46,7 @@ then
 	gtf_id2name ${params}
 fi 
 
-#DESeq2.r $params $ID2NAME $group_info $GROUP $group_sheet/raw_count.txt
+DESeq2.r $params $ID2NAME $group_info $GROUP $group_sheet/raw_count.txt
 
 DESeq_post_v3.r $group_sheet/$GROUP/${GROUP}_Rscript.RData $group_sheet/align_summary.txt meta_data/signature.txt meta_data/target.txt
 
