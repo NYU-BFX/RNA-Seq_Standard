@@ -37,7 +37,6 @@ then
 summarize_raw_count `cat $group_info | cut -f1 | skipn 1 | sed 's/^/alignment\//g' | sed 's/$/\/STAR.count.txt/g' | tr '\n' ' '` > $group_sheet/raw_count.txt
 fi
 
-#qsub -b Y -cwd -j Y -pe threaded 8 /local/apps/R/3.2.0/bin/Rscript ~/utilities/yixiao_scripts/count2fpkm.r ../referenceFiles/Homo_sapiens.GRCh37.\?\?.gtf ../referenceFiles/Homo_sapiens.GRCh37.\?\?.id2name.txt ../alignment/raw_count.txt
 
 install_R_packages.r
 
@@ -47,12 +46,11 @@ then
 	gtf_id2name ${params}
 fi 
 
-DESeq2.r $params $ID2NAME $group_info $GROUP $group_sheet/raw_count.txt
+#DESeq2.r $params $ID2NAME $group_info $GROUP $group_sheet/raw_count.txt
 
 DESeq_post_v3.r $group_sheet/$GROUP/${GROUP}_Rscript.RData $group_sheet/align_summary.txt meta_data/signature.txt meta_data/target.txt
 
 rm -rf Rplots.pdf
 
-#zip -r ${group_sheet}_Report.zip $group_sheet
 
-#ln -s $OUT_DIR/${group_sheet}_Report.zip ../../${group_sheet_Report}.zip
+echo "###### Done ######"
