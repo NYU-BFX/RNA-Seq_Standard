@@ -88,13 +88,30 @@ if(!file.exists(file.path(outdir,"fpkm_table.txt"))){
 comparisons=cbind("grp",t(combn(levels(colData(dds)$grp),2)))
 
 if(dim(comparisons)[1]<=36){
-dds <- DESeq(dds)
+
+# clean large objects before running DESeq() in parallel to help avoid memory issue (R's internal memory garbage collector, gc(), may be making copies of the large objects in the environment in all of the workers.)
+rm(id2name,countsData,txdb,ebg,raw_count,norm_count,fpkm_table)
+dds <- DESeq(dds,parallel=T)
+# reload cleaned objects
+id2name=as.matrix(read.table(args[2],header=F,row.names = 1))
+countsData=ReadAsMatrix(args[5])
+countsData <- countsData[order(rownames(countsData)),]
+countsData <- countsData[,order(colnames(countsData))]
+raw_count=counts(dds)
+sampleName=colnames(countsData)
+norm_count=counts(dds, normalized=T)
+rownames(norm_count)=id2name[,1][match(rownames(norm_count),rownames(id2name))]
+fpkm_table=fpkm(dds,robust=T)
+rownames(fpkm_table)=id2name[,1][match(rownames(fpkm_table),rownames(id2name))]
+
+
 # Regularized-logarithm transformation
 rld <- rlog(dds, blind=FALSE)
 rownames(rld)=id2name[,1][match(rownames(rld),rownames(id2name))]
 
 
 ToCharacter=function(x){x}
+
 
 for (i in 1:dim(comparisons)[1]){
   res=results(dds,contrast=comparisons[i,])
