@@ -28,6 +28,13 @@ summarize_comparison=function(outdir,signature,target,DE,comparison,preprocessin
   publish(hwrite(himg, br=TRUE), htmlRep,name=paste("MA Plot ", comparison[2],"_vs_",comparison[3],sep=""))
   himg <- hwriteImage(paste(prefix,"_MA_plot.png",sep=""),link=paste(prefix,"_MA_plot.pdf",sep=""))
   publish(hwrite(himg, br=TRUE), htmlRep1,name=paste("MA Plot ", comparison[2],"_vs_",comparison[3],sep=""))
+
+  markVolcanoPlot(outdir,signature,comparison,prefix,res)  
+  himg <- hwriteImage(paste(comparison[2],"_vs_",comparison[3],"/",prefix,"_Volcano_plot.png",sep=""),link=paste(comparison[2],"_vs_",comparison[3],"/",prefix,"_Volcano_plot.pdf",sep=""))
+  publish(hwrite(himg, br=TRUE), htmlRep,name=paste("Volcano Plot ", comparison[2],"_vs_",comparison[3],sep=""))
+  himg <- hwriteImage(paste(prefix,"_Volcano_plot.png",sep=""),link=paste(prefix,"_Volcano_plot.pdf",sep=""))
+  publish(hwrite(himg, br=TRUE), htmlRep1,name=paste("Volcano Plot ", comparison[2],"_vs_",comparison[3],sep=""))
+  
   
 
   if(sum(!(target %in% signature))==0){
@@ -43,6 +50,9 @@ summarize_comparison=function(outdir,signature,target,DE,comparison,preprocessin
     markMAplot(outdir,myGenes,comparison,prefix,res)  
     himg <- hwriteImage(paste(prefix,"_MA_plot.png",sep=""),link=paste(prefix,"_MA_plot.pdf",sep=""))
     publish(hwrite(himg, br=TRUE), htmlRep1,name=paste(prefix," MA Plot ", comparison[2],"_vs_",comparison[3],sep=""))
+    markVolcanoPlot(outdir,myGenes,comparison,prefix,res)  
+    himg <- hwriteImage(paste(prefix,"_Volcano_plot.png",sep=""),link=paste(prefix,"_Volcano_plot.pdf",sep=""))
+    publish(hwrite(himg, br=TRUE), htmlRep1,name=paste(prefix," Volcano Plot ", comparison[2],"_vs_",comparison[3],sep=""))
   }
   
   sampleGroup <- data.frame(colData(dds)[,c("grp")])
@@ -96,8 +106,7 @@ summarize_comparison=function(outdir,signature,target,DE,comparison,preprocessin
 # MA-plot. The log2 fold change for a particular comparison is plotted on the y-axis and the average of the counts normalized by size factor is shown on the x-axis (“M” for minus, because a log ratio is equal to log minus log, and “A” for average). Each gene is represented with a dot. Genes with an adjusted p value below a threshold (here 0.1, the default) are shown in red
 markMAplot <- function(outdir,signature,comparison,prefix,res){
   if(outdir==""){outdir="."}
-  png(filename=paste(outdir,"/",comparison[2],"_vs_",comparison[3],"/",prefix,"_MA_plot.png",sep=""))
-  plotMA(res, ylim=c(-5,5), main=paste(prefix," ", comparison[2],"_vs_",comparison[3],sep=""))
+  plotMA(res, ylim=c(-5,5), main=paste(prefix," ", comparison[2]," vs ",comparison[3],sep=""))
   mylist=""
   for (i in signature){mylist=c(mylist,grep(paste("^",i,"$|:",i,"$",sep=""), res$symbol))}
   mylist=rownames(res)[as.numeric(mylist[-1])]
@@ -108,21 +117,49 @@ markMAplot <- function(outdir,signature,comparison,prefix,res){
       text(baseMean, log2FoldChange, topGeneName, pos=2, col="dodgerblue",cex=0.6)
     })
   }
+  p <- recordPlot()
+  plot.new()
+  png(filename=paste(outdir,"/",comparison[2],"_vs_",comparison[3],"/",prefix,"_MA_plot.png",sep=""))
+  print(p)
   dev.off()
   pdf(file=paste(outdir,"/",comparison[2],"_vs_",comparison[3],"/",prefix,"_MA_plot.pdf",sep=""),onefile=FALSE)
-  plotMA(res, ylim=c(-5,5), main=paste(prefix," ", comparison[2],"_vs_",comparison[3],sep=""))
-  mylist=""
-  for (i in signature){mylist=c(mylist,grep(paste("^",i,"$|:",i,"$",sep=""), res$symbol))}
-  mylist=rownames(res)[as.numeric(mylist[-1])]
-  for (topGene in mylist){
-    topGeneName=res[topGene,]$symbol
-    with(res[topGene, ], {
-      points(baseMean, log2FoldChange, col="dodgerblue", cex=0.5, lwd=2)
-      text(baseMean, log2FoldChange, topGeneName, pos=2, col="dodgerblue",cex=0.6)
-    })
-  }
+  print(p)
   dev.off()
 }
+
+# Plot Volcano Plot
+markVolcanoPlot <- function(outdir,signature,comparison,prefix,res){
+if(outdir==""){outdir="."}
+tab = data.frame(logFC = res$log2FoldChange, negLogPval = -log10(res$pvalue),symbol=res$symbol)
+par(mar = c(5, 5, 5, 6))
+plot(tab[,1:2], main=paste(prefix," ", comparison[2]," vs ",comparison[3],sep=""), xlim=range(-max(abs(na.omit(tab$logFC))),max(abs(na.omit(tab$logFC)))), pch = 16, cex = 0.6, xlab = expression(log[2]~fold~change), ylab = expression(-log[10]~pvalue))
+lfc = 1
+pval = 0.05
+signGene=tab %>% filter(abs(logFC)>lfc) %>% filter(negLogPval>-log10(pval))
+points(signGene, pch = 16, cex = 0.6, col = "red") 
+mylist=""
+for (i in signature){mylist=c(mylist,grep(paste("^",i,"$|:",i,"$",sep=""), res$symbol))}
+mylist=rownames(res)[as.numeric(mylist[-1])]
+for (topGene in mylist){
+  points(tab[topGene,1:2], cex=0.7, lwd=2, col = "dodgerblue") 
+  text(tab[topGene,1:2],labels=as.character(tab[topGene,]$symbol), pos=4, col="dodgerblue",cex=0.6)
+}
+abline(h = -log10(pval), col = "green3", lty = 2) 
+abline(v = c(-lfc, lfc), col = "blue", lty = 2) 
+mtext(paste("pval =", pval), side = 4, at = -log10(pval), cex = 0.8, line = 0.5, las = 1) 
+mtext(c(paste("-", lfc, "fold"), paste("+", lfc, "fold")), side = 3, at = c(-lfc, lfc), cex = 0.8, line = 0.5)
+p <- recordPlot()
+plot.new()
+
+png(filename=paste(outdir,"/",comparison[2],"_vs_",comparison[3],"/",prefix,"_Volcano_plot.png",sep=""))
+print(p)
+dev.off()
+pdf(file=paste(outdir,"/",comparison[2],"_vs_",comparison[3],"/",prefix,"_Volcano_plot.pdf",sep=""),onefile=FALSE)
+print(p)
+dev.off()
+}
+
+
 
 # Plot the Differential Expression Test Result
 topGeneHeatmap <- function(outdir,myGenes,comparison,prefix,sampleGroup,preprocessing,myMatrix){
