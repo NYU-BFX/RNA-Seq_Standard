@@ -71,10 +71,6 @@ if [ $status -ne 0 ]; then exit 1; fi
 echo
 
 echo "###### Completed: $SAMPLE"
-echo "###### Done ######"
 date
-echo
-echo
-echo
-
+echo "###### Done ######"
 

@@ -53,14 +53,14 @@ echo "#!/bin/bash" > $BASE_DIR/run.bash
 echo "cd `pwd`" >> $BASE_DIR/run.bash
 
 CMD="
-source code/custom_bash_profile
+source code/custom-bashrc
 cufflinks -p $NSLOTS --library-type=fr-${STRAND} $params -o $BASE_DIR $INP_DIR/$SAMPLE/accepted_hits.bam
 "
 #printf "\n\n $CMD \n\n"
 printf "\n\n $CMD \n\n" >> $BASE_DIR/run.bash
 
 
-source code/custom_bash_profile
+source code/custom-bashrc
 cufflinks -p $NSLOTS --library-type=fr-${STRAND} $params -o $BASE_DIR $INP_DIR/$SAMPLE/accepted_hits.bam
 
 

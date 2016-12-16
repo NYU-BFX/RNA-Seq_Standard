@@ -6,7 +6,7 @@ wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit
 
 twoBitToFa hg19.2bit genome.fa
 
-samtools index genome.fa
+samtools faidx genome.fa
 
 # gene.gtf
 wget ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_19/gencode.v19.annotation.gtf.gz

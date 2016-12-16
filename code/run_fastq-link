@@ -104,7 +104,7 @@ then
 printf "\n\n***** Linking $name_sample To $INP_DIR/$name_sample/${id_file}...\n"
 
 ln -sf ../`basename $INP_DIR`/$name_sample/${id_file}_1.fastq.gz $OUT_DIR/$name_sample/${name_sample}_L${num_run}_R1.fastq.gz
-if [[ -f ../`basename $INP_DIR`/$name_sample/${id_file}_2.fastq.gz ]]
+if [[ -f $INP_DIR/$name_sample/${id_file}_2.fastq.gz ]]
 then
 ln -sf ../`basename $INP_DIR`/$name_sample/${id_file}_2.fastq.gz $OUT_DIR/$name_sample/${name_sample}_L${num_run}_R2.fastq.gz
 fi

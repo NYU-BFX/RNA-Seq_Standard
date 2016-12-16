@@ -12,7 +12,6 @@ for (p in my.packages){
 }
 
 sessionInfo()
-register(MulticoreParam(Sys.getenv(x = "NSLOTS", unset = "6", names = NA)))
 
 ReadAsMatrix<-function(filename){
   myMatrix <-as.matrix(read.table(filename,row.names=1))
@@ -91,7 +90,7 @@ if(dim(comparisons)[1]<=36){
 
 # clean large objects before running DESeq() in parallel to help avoid memory issue (R's internal memory garbage collector, gc(), may be making copies of the large objects in the environment in all of the workers.)
 rm(id2name,countsData,txdb,ebg,raw_count,norm_count,fpkm_table)
-dds <- DESeq(dds,parallel=T)
+dds <- DESeq(dds, parallel = TRUE, BPPARAM = BiocParallel::MulticoreParam(workers = Sys.getenv(x = "NSLOTS", unset = "6", names = NA)))
 # reload cleaned objects
 id2name=as.matrix(read.table(args[2],header=F,row.names = 1))
 countsData=ReadAsMatrix(args[5])
