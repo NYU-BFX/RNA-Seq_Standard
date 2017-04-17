@@ -10,12 +10,13 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 2. This pipeline not only process RNA-seq data from local directory, but also be able to download data from SRA(download .sra file and convert to fastq.gz file) and TCGA(download .bam file and convert to fastq.gz file). Please follow the following instruction to setup the [meta_data/download_list.txt](meta_data/download_list.txt) file:
 
-	a. For local stored RNA-seq data in "fastq.gz" format, the files name must follow the following naming convention: 
-	ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing). In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to the fastq.gz file
+	* a. For local stored RNA-seq data in "fastq.gz" format, the files name must follow the following naming convention: 
+		+ ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing). 
+	     In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to the fastq.gz file
 
-	b. For GEO samples from SRA, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding SRX number should be in the second column and the third column you need to write "SRA".
+	* b. For GEO samples from SRA, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding SRX number should be in the second column and the third column you need to write "SRA".
 
-	c. For TCGA samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding TCGA UUID of the BAM file should be in the second column and the third column you need to give the path of your TCGA user token file obtained from TCGA for accessing the protected BAM file. 
+	* c. For TCGA samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding TCGA UUID of the BAM file should be in the second column and the third column you need to give the path of your TCGA user token file obtained from TCGA for accessing the protected BAM file. 
 	
 5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis. You can have multiple [group information file](meta_data/group_info.txt) with different names. (In this file, the sample name must be identical witht he sample name you use in the first column of the [meta_data/download_list.txt])
 
