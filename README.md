@@ -33,9 +33,9 @@ Once everything has been set up, you can run the pipeline as following:
 	```
 	qsub -b Y -cwd -pe threaded 1 ./run.bash params meta_data/group_info.txt
 	```
-   And you can change the detailed job scheduling parameter including number of thread used in [code/job_submitter.bash]
+   And you can change the detailed job scheduling parameter including number of thread used in [code/job_submitter.bash](code/job_submitter.bash)
 	
-2.  If you are using another job scheduling system, you may need to write your own job submitter. You can use [code/job_submitter.bash] as a reference. In the end, you need to submit the following master command using your job submitting system to start the whole pipeline.
+2.  If you are using another job scheduling system, you may need to write your own job submitter. You can use [code/job_submitter.bash](code/job_submitter.bash) as a reference. In the end, you need to submit the following master command using your job submitting system to start the whole pipeline.
    
 	```
 	./run.bash params meta_data/group_info.txt
