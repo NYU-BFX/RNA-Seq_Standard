@@ -6,20 +6,18 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 #### Setting up:
 
-1. You first need to have pre-built STAR reference in your [referenceFiles](referenceFiles/) folder. If you do not have it, please download a "genome.fa" file from public sites.
-   Please use the following command to generate STAR Index:    
-   
-	```
-	code/generate_STAR-Index params referenceFiles/STAR_Reference
-	```
+1. You first need to have a [referenceFiles](referenceFiles/) folder containing pre-built [STAR reference](referenceFiles/STAR_Reference), [chromInfo.txt](referenceFiles/chromInfo.txt), etc. If you do not have it, you can run the [files_needed.bash](referenceFiles/files_needed.bash) to download the necessary files and generate the STAR index. But you need to change "hg19" and "v19" in the script to the genome reference version you desire.
+
+2. This pipeline not only process RNA-seq data from local directory, but also be able to download data from SRA(download .sra file and convert to fastq.gz file) and TCGA(download .bam file and convert to fastq.gz file). Please follow the following instruction to setup the [meta_data/download_list.txt](meta_data/download_list.txt) file:
+
+	a. For local stored RNA-seq data in "fastq.gz" format, the files name must follow the following naming convention: 
+	*ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing). In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to the fastq.gz file
+
+	b. For GEO samples from SRA, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding SRX number should be in the second column and the third column you need to write "SRA".
+
+	c. For TCGA samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding TCGA UUID of the BAM file should be in the second column and the third column you need to give the path of your TCGA user token file obtained from TCGA for accessing the protected BAM file. 
 	
-2. You need to have a "chromInfo.txt" file in your [referenceFiles](referenceFiles/) folder in order to produce RNA-Seq signal tracks. 
-
-3. This pipeline can process GTC generated RNA-Seq data in the "/ifs/data/sequence/results/" folder. Please see the [template](meta_data/20160224.txt). Sample name need to be defined in this file for each of your samples. You will need to generate a .txt file for each of your fastq files directories put them into [meta data](meta_data/) directory and put path of those files into [params](params) file.
-
-4. This pipeline can also perform automatic download from SRA and process the samples. Please see the [template](meta_data/sra_info.txt). Sample names need to be defined in this file for corresponding SRX numberi. The path of [sra_info.txt](meta_data/sra_info.txt) need to be put into [params](params) file. 
-
-5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis. You can have multiple [group information file](meta_data/group_info.txt) with different names.
+5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis. You can have multiple [group information file](meta_data/group_info.txt) with different names. (In this file, the sample name must be identical witht he sample name you use in the first column of the [meta_data/download_list.txt])
 
 6. This pipeline use STAR aligner to align the reads. An transcripts annotation GTF format file ("--sjdbGTFfile" option for STAR aligner in the [params](params) file) is required for STAR to extract splice junctions and use them to greatly improve the accuracy of the mapping. And this step also counting number of reads per gene for all the genes in the transcripts annotation GTF file using in the alignment step. The downstream RNA-Seq standard report are all based on this transcript annotation GTF. 
 
@@ -35,7 +33,9 @@ Once everything has been set up, you can run the pipeline as following:
 	```
 	qsub -b Y -cwd -pe threaded 1 ./run.bash params meta_data/group_info.txt
 	```
-	* If you are using another job scheduler, you can submit the follwoing command using your own job scheduler:
+   And you can change the detailed job scheduling parameter including number of thread used in [code/job_submitter.bash](code/job_submitter.bash)
+	
+2.  If you are using another job scheduling system, you may need to write your own job submitter. You can use [code/job_submitter.bash](code/job_submitter.bash) as a reference. In the end, you need to submit the following master command using your job submitting system to start the whole pipeline.
    
 	```
 	./run.bash params meta_data/group_info.txt
