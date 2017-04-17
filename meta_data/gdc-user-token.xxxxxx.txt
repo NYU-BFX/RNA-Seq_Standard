@@ -1,0 +1,1 @@
+this is a fake token file. you need apply for your own token file from TCGA and replace this token file.
