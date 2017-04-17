@@ -55,7 +55,7 @@ align_reads <- function(x){
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     ggtitle("B. Alignment Category Reads") +
     xlab("") + ylab("Number of Reads in Millions") +
-    theme(axis.title = element_text(size=8),axis.text.y = element_blank(),plot.title = element_text(size=8),legend.title=element_blank(),legend.text=element_text(size=8),axis.ticks.y=element_blank(), axis.line.y=element_blank()) +
+    theme(axis.title = element_text(size=8),axis.text.y = element_blank(),axis.text.x = element_text(size=8),plot.title = element_text(size=8),legend.title=element_blank(),legend.text=element_text(size=8),axis.ticks.y=element_blank(), axis.line.y=element_blank()) +
     coord_flip()
     return(myplot)
 }
@@ -70,14 +70,21 @@ align_PCT <- function(x){
     ggtitle("A. Alignment Category Percentage") +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     xlab("") + ylab("Percentage of Reads") +
-    theme(axis.title = element_text(size=8),axis.text.y = element_text(angle=0),plot.title = element_text(size=8)) +
+    theme(axis.title = element_text(size=8),axis.text.y = element_text(size=8,angle=0),axis.text.x = element_text(size=8),plot.title = element_text(size=8)) +
     guides(fill=FALSE) +
     coord_flip()
     return(myplot)
 }
 
-myplot=plot_grid(align_PCT(read.table(align_summary)),align_reads(read.table(align_summary)))
-publish(myplot, htmlRep,name="Alignment Summary")
+dir.create(paste(longdir,"/figures",outdir,sep=""))
+pdf(paste0(longdir,"/figures",outdir,"/Align_Summary.pdf",sep=""),width = 7,height=6,onefile = F)
+plot_grid(align_PCT(read.table(align_summary)),align_reads(read.table(align_summary)))
+dev.off()
+png(filename=paste0(longdir,"/figures",outdir,"/Align_Summary.png",sep=""),width = 7,height=6,units = "in",res=300)
+plot_grid(align_PCT(read.table(align_summary)),align_reads(read.table(align_summary)))
+dev.off()
+himg <- hwriteImage(paste("figures",outdir,"/Align_Summary.png",sep=""),link=paste("figures",outdir,"/Align_Summary.pdf",sep=""))
+publish(hwrite(himg, br=TRUE), htmlRep,name=paste("figures",outdir,"/Align_Summary",sep=""))
 
 # compute number of reads total for each samples
 sample_summary<-colData(dds)[,1:2]%>%data.frame()%>%left_join(data.frame(sample=rownames(data.frame(colSums(assay(dds)))),NumofReads=colSums(assay(dds))),by=c("sampleName"="sample"))
