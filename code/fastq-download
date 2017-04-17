@@ -1,0 +1,155 @@
+#!/bin/bash
+
+source code/custom-bashrc
+
+
+if [ "$#" -ne 2 ] && [ "$#" -ne 3 ] && [ "$#" -ne 4 ]
+then
+  printf "\n###### Usage\n"
+  printf "$0 [Optional: Threads (Default 6)] <PARAMS> <OUTPUT_DIR> [Optional: Sample Name] \n"
+  exit
+fi
+
+date
+
+
+
+
+#########################
+# input
+
+if [[ $1 =~ ^[[:digit:]]{1,2}$ ]];then NSLOTS=$1;shift
+elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
+
+PARAMS=$1
+OUT_DIR=$2
+SAMPLE=$3
+
+CWD=`pwd`
+
+#########################
+if [ ! -d $OUT_DIR ]; then mkdir -p $OUT_DIR; fi
+
+IFS=$'\n'
+
+#header=`cat $PARAMS | grep -E "^#" | head -1 | cut -d' ' -f2`
+
+
+########################
+# SRA Download
+for record in `cat $PARAMS | grep -v "^#"`
+do
+  name_sample=`echo $record | cut -f1`
+  id_sample=`echo $record | cut -f2`
+  header=`echo $record | cut -f3`
+  if [ "$name_sample" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
+  then
+  # check for output existance
+    if [ ! -d $OUT_DIR/$name_sample ]
+    then
+      mkdir $OUT_DIR/$name_sample
+      fastq_dump_path=`which fastq-dump.2.4.2`
+      picard_path=`which picard.jar`
+      gdc_client_path=`which gdc-client`
+      ### change of directory
+      cd $OUT_DIR/$name_sample/
+      echo "#!/bin/bash" > run.bash
+      echo "cd $OUT_DIR/$name_sample/ # change of directory" >> run.bash
+    else
+      echo "Output $OUT_DIR/$name_sample Existing!"
+      break
+    fi
+    
+    if [ "$header" == "SRA" ]; then
+      echo
+      echo "###### Downloading $name_sample from $header!"
+    
+      link_sample="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${id_sample:0:6}/$id_sample/"
+      ID_RUNS=(`curl -sS $link_sample | sed -r 's/\s+/\t/g' | cut -f9 `)
+      num_run=0
+      echo "$link_sample"
+      mkdir data  # creating data directory...
+      echo "mkdir data  # creating data directory" >> run.bash
+      for id_run in "${ID_RUNS[@]}"
+      do
+        echo "  |____ $id_run"
+        ((num_run++))
+        num_run=$(printf "%03d" $num_run)
+        link_run=${link_sample}${id_run}"/"
+        ID_FILES=(`curl -sS $link_run | sed -r 's/\s+/\t/g' | cut -f9 `)
+        for name_file in "${ID_FILES[@]}"
+        do
+          echo "  |  |____ $id_file"
+          echo "  |  |         Retrieving SRA... "
+          link_file=${link_run}${name_file}
+          wget -nv $link_file # downloading .sra file
+          echo "wget -nv $link_file # download .sra file" >> run.bash
+          echo "  |  |         Converting SRA..."
+          $fastq_dump_path --split-files -gzip $name_file # convert SRA file to fastq.gz file and seperate read1 and read2
+          echo "$fastq_dump_path --split-files -gzip $name_file # convert SRA file to fastq.gz file and seperate read1 and read2" >> run.bash
+          id_file=${name_file%.*}
+          rm -rf $name_file  # cleaning up .sra file...
+          echo "mkdir data  # cleaning up .sra file..." >> run.bash
+          mv ${id_file}_1.fastq.gz data/; ln -s data/${id_file}_1.fastq.gz ${name_sample}_L${num_run}_R1.fastq.gz # linking read1...
+          echo "mv ${id_file}_1.fastq.gz data/; ln -s data/${id_file}_1.fastq.gz ${name_sample}_L${num_run}_R1.fastq.gz # linking read1..." >> run.bash
+          echo " |  |         Linking data/${id_file}_1.fastq.gz to ${name_sample}_L${num_run}_R1.fastq.gz"
+          if [[ -f ${id_file}_2.fastq.gz ]] 
+          then 
+            mv ${id_file}_2.fastq.gz data/; ln -s data/${id_file}_2.fastq.gz ${name_sample}_L${num_run}_R2.fastq.gz # linking read2...
+            echo "mv ${id_file}_2.fastq.gz data/; ln -s data/${id_file}_2.fastq.gz ${name_sample}_L${num_run}_R2.fastq.gz # linking read2..." >> run.bash
+            echo " |  |         Linking data/${id_file}_2.fastq.gz to ${name_sample}_L${num_run}_R2.fastq.gz"
+          fi
+        done
+      done
+    elif [[ $header == *gdc-user-token* ]]
+    then
+      echo
+      echo "###### Downloading $name_sample from TCGA!"
+      echo $id_sample
+      echo "  |____ Downloading .bam file..."
+      cd ../;$gdc_client_path download --no-annotations -n $NSLOTS -t $header $id_sample;cd -;mkdir data # Downloading bam file and creating data directory...
+      echo "cd ../;$gdc_client_path download --no-annotations -n $NSLOTS-t $header $id_sample;cd -;mkdir data # Downloading bam file and creatingi data directory... " >> run.bash
+      echo "  |____ Converting to .fastq file..."
+      java -jar $picard_path SamToFastq I=`ls *.bam` FASTQ=data/${id_sample}_L001_R1.fastq SECOND_END_FASTQ=data/${id_sample}_L001_R2.fastq QUIET=true VERBOSITY=ERROR INCLUDE_NON_PF_READS=true # Converting to fastq file...
+      echo "java -jar $picard_path SamToFastq I=\`ls *.bam\` FASTQ=data/${id_sample}_L001_R1.fastq SECOND_END_FASTQ=data/${id_sample}_L001_R2.fastq QUIET=true VERBOSITY=ERROR INCLUDE_NON_PF_READS=true # Converting to fastq file..." >> run.bash 
+      rm -rf *.ba{m,i}  # Cleaning up .bam and .bai file
+      echo "rm -rf *.ba{m,i} # cleaning up .bam and .bai file" >> run.bash
+      echo "  |____ Gzipping to .gz file..."
+      gzip data/${id_sample}_L001_R1.fastq data/${id_sample}_L001_R2.fastq # Gzipping to .gz file...
+      echo "gzip data/${id_sample}_L001_R1.fastq data/${id_sample}_L001_R2.fastq # Gzipping to .gz file..." >> run.bash
+      ln -s data/${id_sample}_L001_R1.fastq.gz ${name_sample}_L001_R1.fastq.gz # Linking read1...
+      echo "ln -s data/${id_sample}_L001_R1.fastq.gz ${name_sample}_L001_R1.fastq.gz # Linking read1..." >> run.bash
+      if [ ! -s data/${id_sample}_L001_R2.fastq.gz ]
+      then
+        rm -rf data/${id_sample}_L001_R2.fastq.gz # Deleting empty read2 file...
+        echo "rm -rf data/${id_sample}_L001_R2.fastq.gz # Deleting empty read2 file..." >> run.bash
+      else
+        ln -s data/${id_sample}_L001_R2.fastq.gz ${name_sample}_L001_R2.fastq.gz # Linking read2...
+        echo "ln -s data/${id_sample}_L001_R2.fastq.gz ${name_sample}_L001_R2.fastq.gz # Linking read2..." >> run.bash
+      fi
+    elif [ -d $header ]
+    then
+      echo
+      echo "###### Linking $name_sample from Local Directory!"
+      echo $header
+      ln -s $header data # linking source directory...
+      echo "ln -s $header data # linking source directory..." >> run.bash
+      for myfastq in `ls -1 $header | grep "$id_sample"`
+      do
+        echo "  |____ data/`basename $myfastq` to ${name_sample}`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2`"
+        ln -sf data/`basename $myfastq` ${name_sample}`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2` # linking file...
+        echo "ln -sf data/\`basename $myfastq\` ${name_sample}\`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2\` # linking file..." >> run.bash
+      done
+    else
+      printf "\n###### Metadata file lacking of comment header! \n\t(The first line of input metadata file should start with \"\# \" and follow by \" SRA\", \"TCGA\", or local directory path\n"
+    fi
+  fi
+  echo "cd $CWD # changing back to working directory..." >> run.bash
+  cd $CWD
+done
+
+
+#########################
+echo
+date
+# end

@@ -1,0 +1,4 @@
+#!/local/apps/python/2.7.3/bin/python
+# EASY-INSTALL-SCRIPT: 'gdc-client==1.2.0','gdc-client'
+__requires__ = 'gdc-client==1.2.0'
+__import__('pkg_resources').run_script('gdc-client==1.2.0', 'gdc-client')

@@ -51,7 +51,7 @@ align_reads <- function(x){
   x=x[order(x$V1,x$V2),]
   myplot <-
     ggplot(x,aes(x=V1,y=V3,fill=V2)) +
-    geom_bar(stat="identity",position="stack") +
+    geom_bar(stat="identity",position=position_stack(vjust = 1, reverse = T)) +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     ggtitle("B. Alignment Category Reads") +
     xlab("") + ylab("Number of Reads in Millions") +
@@ -66,7 +66,7 @@ align_PCT <- function(x){
   x$V4 <- factor(x$V4, levels = c("Uniquely_Mapped","Multi_Mapped","Unmapped"))
   x=x[order(x$V1,x$V2),]
     myplot <- ggplot(x,aes(x=V1,y=V3,fill=V2)) +
-    geom_bar(stat="identity",position="stack") +
+    geom_bar(stat="identity",position=position_stack(vjust = 1, reverse = T)) +
     ggtitle("A. Alignment Category Percentage") +
     scale_fill_manual(values=c("limegreen","forestgreen","orchid","indianred1")) +
     xlab("") + ylab("Percentage of Reads") +

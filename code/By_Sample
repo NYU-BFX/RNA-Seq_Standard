@@ -46,16 +46,11 @@ date
 echo
 
 echo "###### Downloading: $SAMPLE"
-run_fastq-download $params pipeline/download meta_data $SAMPLE
-if [ $FLAG -eq 1 ]; then rsync -rl pipeline/download/ $CWD/pipeline/download/; fi
+fastq-download `cat params | grep "^fastq-download" | cut -f2` pipeline/fastq $SAMPLE
+if [ $FLAG -eq 1 ]; then rsync -rl pipeline/fastq/ $CWD/pipeline/fastq/; fi
 status=$?
 if [ $status -ne 0 ]; then exit 1; fi
 
-echo "###### Linking: $SAMPLE"
-run_fastq-link $params pipeline/fastq pipeline/download $SAMPLE
-status=$?
-if [ $FLAG -eq 1 ]; then rsync -rl pipeline/fastq/ $CWD/pipeline/fastq/; fi
-if [ $status -ne 0 ]; then exit 1; fi
 echo "###### Alignning: $SAMPLE"
 run_alignment $params pipeline/alignment pipeline/fastq $SAMPLE
 status=$?

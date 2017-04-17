@@ -34,6 +34,11 @@ STAR_PREFIX=${BASE_DIR}/STAR.
 NAME=`basename $BASE_DIR`
 
 
+#########################
+# bin path
+picard_path=`which picard.jar`
+star_path=`which STAR`
+
 
 #########################
 # check inputs
@@ -94,14 +99,12 @@ echo " * BAM: ${STAR_PREFIX}Aligned.sortedByCoord.out.bam "
 # Picard says STAR-sorted BAM "is not coordinate sorted", so using samtools for sorting
 
 CMD="
-STAR \
+$star_path \
 --runThreadN $NSLOTS \
 --genomeLoad NoSharedMemory \
---outFilterMismatchNoverLmax 0.05 \
 --outFilterType BySJout \
 --outSAMstrandField intronMotif \
 --outSAMattributes NH HI AS nM NM MD XS \
---outSAMmapqUnique 60 \
 --twopassMode Basic \
 --readFilesIn $FASTQ1 $FASTQ2 \
 --outFileNamePrefix $STAR_PREFIX \
@@ -146,7 +149,7 @@ else
 #---------------#
 # need to figure out how to set this path to the jar files
 CMD="
-java -XX:-UsePerfData -Xms8G -Xmx16G -jar /ifs/home/gongy05/utilities/picard-tools/1.88/MarkDuplicates.jar \
+java -XX:-UsePerfData -Xms8G -Xmx16G -jar $picard_path MarkDuplicates \
 VERBOSITY=WARNING QUIET=true VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=2500000 \
 $params \
 INPUT=${STAR_PREFIX}Aligned.sortedByCoord.out.bam \
@@ -184,7 +187,7 @@ CMD="
 cat ${STAR_PREFIX}Log.final.out | grep \"Number of input reads\|Uniquely mapped reads number\|Number of reads mapped to too many loci\" | cut -f2 | perl -lane 'printf \"\$_\t\"' | awk '{print \$1-\$2-\$3}' | awk '{print \"\t\tNumber of reads unmapped\t|\t\"\$1}' >> ${STAR_PREFIX}Log.final.out;
 echo >> ${STAR_PREFIX}Log.final.out;
 echo -e \"\t\t\t\tDUPLICATED READS:\" >> ${STAR_PREFIX}Log.final.out;
-head -8 $BASE_DIR/remove_duplicates.txt | tail -1 | cut -f8 | awk '{print \"\t\t\t% of reads Duplicated\t|\t\"\$1*100\"%\"}' >> ${STAR_PREFIX}Log.final.out;
+head -8 $BASE_DIR/remove_duplicates.txt | tail -1 | cut -f9 | awk '{print \"\t\t\t% of reads Duplicated\t|\t\"\$1*100\"%\"}' >> ${STAR_PREFIX}Log.final.out;
 grep \"Uniquely mapped reads number\|Duplicated\" ${STAR_PREFIX}Log.final.out | sed -E 's/\s+//g' | cut -d '|' -f2 | perl -lane 'printf \"\$_\t\"' | perl -lane '{\$dup=sprintf(\"%.0f\",\$F[0]*\$F[1]/100);\$unique=\$F[0]-\$dup;print \"\$unique\t\$dup\"}' | awk '{print \"\t\tNumber of reads unduplicated\t|\t\"\$1\"\n\t\tNumber of reads duplicated\t|\t\"\$2}' >> ${STAR_PREFIX}Log.final.out
 "
 #printf "\n\n $CMD \n\n"

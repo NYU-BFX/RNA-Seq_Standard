@@ -1,0 +1,6 @@
+EryB	SRX669497	SRA
+f327cd15-9af4-4c6d-8318-986934ea32c9	f327cd15-9af4-4c6d-8318-986934ea32c9	meta_data/gdc-user-token.xxxxxx.txt
+A549_REN_24H-rep1	A549_REN_REP1_24H_CGATGT	/ifs/data/2016-02-24/fastq/
+EryA	SRX669496	SRA
+e3878649-03e0-4d19-a14c-344afe2f1b4a	e3878649-03e0-4d19-a14c-344afe2f1b4a	meta_data/gdc-user-token.xxxxxx.txt
+A549_REN_48H-rep1	A549_REN_REP1_48H_CGATGT	/ifs/data/2016-02-24/fastq/
