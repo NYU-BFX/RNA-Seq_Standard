@@ -11,7 +11,7 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 2. This pipeline not only process RNA-seq data from local directory, but also be able to download data from SRA(download .sra file and convert to fastq.gz file) and TCGA(download .bam file and convert to fastq.gz file). Please follow the following instruction to setup the [meta_data/download_list.txt](meta_data/download_list.txt) file:
 
 	a. For local stored RNA-seq data in "fastq.gz" format, the files name must follow the following naming convention: 
-	*ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing). In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to the fastq.gz file
+	ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing). In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to the fastq.gz file
 
 	b. For GEO samples from SRA, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding SRX number should be in the second column and the third column you need to write "SRA".
 
@@ -23,6 +23,7 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 7. If you have a signature gene list (for example you are doing knockdown of SPOP, then the list should include SPOP and some other related genes) which you would like to check the expression vaule immediately you can define it in the [signature gene list](meta_data/signature.txt). If you have a list of defined targets (for example some ChIP-Seq experiment define a list of direct targets of your knockdown gene), you can define them in the [target gene list](meta_data/target.txt). Or you can keep the existing link to the [signature gene list](meta_data/signature.txt). Please notice the name of the gene in these two file must be consistant with the names in the GTF file you used as "--sjdbGTFfile" option when you are doing STAR alignment. 
 
+8. Please change the [params](params) for any customized parameter settings for all the steps.
 
 #### How to run it:
 
@@ -43,7 +44,7 @@ Once everything has been set up, you can run the pipeline as following:
 	
 2. If you have multiple group_info.txt file, you need to run the command for all your group_info.txt files.  
 
-3. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder.
+3. The summary html report will be generated in [pipeline/summarize](pipeline/summarize) folder. RNA-seq track files, bam files are in each sample's alignment folder.
 
 #### Example of the html report:
 [hESC Report By CellType](http://www.hpc.med.nyu.edu/~gongy05/RNA-Seq_Standard/H1_Cells/By_CellType/By_CellType.html)
