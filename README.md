@@ -8,14 +8,16 @@ RNA-Seq Standard Pipeline is designed to perform standard RNA-Seq analysis for I
 
 1. You first need to have a [referenceFiles](referenceFiles/) folder containing pre-built [STAR reference](referenceFiles/STAR_Reference), [chromInfo.txt](referenceFiles/chromInfo.txt), etc. If you do not have it, you can run the [files_needed.bash](referenceFiles/files_needed.bash) to download the necessary files and generate the STAR index. But you need to change "hg19" and "v19" in the script to the genome reference version you desire.
 
-2. This pipeline not only process RNA-seq data from local directory, but also be able to download data from SRA(download .sra file and convert to fastq.gz file) and TCGA(download .bam file and convert to fastq.gz file). Please follow the following instruction to setup the [meta_data/download_list.txt](meta_data/download_list.txt) file:
+2. This pipeline not only process RNA-seq data from local directory, but also be able to download data from SRA(download .sra file and convert to fastq.gz file), TCGA(download .bam file and convert to fastq.gz file), and EGA (European Genome-phenome Archive). Please follow the following instruction to setup the [meta_data/download_list.txt](meta_data/download_list.txt) file:
 
 	* a. For local stored RNA-seq data in "fastq.gz" format. In the [meta_data/download_list.txt](meta_data/download_list.txt) file, the first column should be the sample name, the second column shold be the ID, and the third column should be the directory to. the fastq.gz file the files name must follow the following naming convention: 
 		+ ID_L001_R1.fastq.gz (L001 means lane 1, R1 means read 1 for paired-end sequencing)
 
 	* b. For GEO samples from SRA, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding SRX number should be in the second column and the third column you need to write "SRA".
 
-	* c. For TCGA samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding TCGA UUID of the BAM file should be in the second column and the third column you need to give the path of your TCGA user token file obtained from TCGA for accessing the protected BAM file. 
+	* c. For TCGA samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding TCGA UUID of the BAM file should be in the second column and the third column you need to give the path of your TCGA user token file obtained from TCGA for accessing the protected BAM file.
+
+	* d. For EGA (European Genome-phenome Archive) samples, sample names should be in the first column in [meta_data/download_list.txt](meta_data/download_list.txt), and the corresponding file ID (Starting with "EGAF") of the fastq.gz.cip file should be in the second column and the third column you need to provide the username and password (separated by single space) for EGA account login starting with "-p ". 
 	
 5. In [group information file](meta_data/group_info.txt) file, you need to categorize your sample into different groups to perform differential expression analysis. You can have multiple [group information file](meta_data/group_info.txt) with different names. (In this file, the sample name must be identical witht he sample name you use in the first column of the [meta_data/download_list.txt])
 
