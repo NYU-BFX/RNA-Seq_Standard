@@ -22,7 +22,7 @@ if [[ $1 =~ ^[[:digit:]]{1,2}$ ]];then NSLOTS=$1;shift
 elif [[ $NSLOTS == "" ]]; then NSLOTS=6; fi
 
 PARAMS=$1
-OUT_DIR=$2
+OUT_DIR=`readlink -f $2`
 SAMPLE=$3
 
 CWD=`pwd`
@@ -45,19 +45,22 @@ do
   if [ "$name_sample" == "$SAMPLE" ] || [ -z "$SAMPLE" ]
   then
   # check for output existance
+    fastq_dump_path=`which fastq-dump.2.4.2`
+    picard_path=`which picard.jar`
+    gdc_client_path=`which gdc-client`
+    EgaDemoClient_path=`which EgaDemoClient.jar`
+    sleep $(( ( RANDOM % 5 )  + 1 )) 
     if [ ! -d $OUT_DIR/$name_sample ]
     then
       mkdir $OUT_DIR/$name_sample
-      fastq_dump_path=`which fastq-dump.2.4.2`
-      picard_path=`which picard.jar`
-      gdc_client_path=`which gdc-client`
       ### change of directory
       cd $OUT_DIR/$name_sample/
       echo "#!/bin/bash" > run.bash
       echo "cd $OUT_DIR/$name_sample/ # change of directory" >> run.bash
     else
       echo "Output $OUT_DIR/$name_sample Existing!"
-      break
+      ### change of directory
+      cd $OUT_DIR/$name_sample/
     fi
     
     if [ "$header" == "SRA" ]; then
@@ -127,6 +130,17 @@ do
         ln -s data/${id_sample}_L001_R2.fastq.gz ${name_sample}_L001_R2.fastq.gz # Linking read2...
         echo "ln -s data/${id_sample}_L001_R2.fastq.gz ${name_sample}_L001_R2.fastq.gz # Linking read2..." >> run.bash
       fi
+    elif [[ $header =~ ^-p[[:space:]].* ]]
+    then
+      CMD="sleep $(( ( RANDOM % 10 )  + 1 )); 
+           java -jar $EgaDemoClient_path $header -nvb -rf $id_sample -re key_$id_sample -label request_$id_sample; 
+           java -jar $EgaDemoClient_path $header -nvb -dr request_$id_sample -path $id_sample -nt $NSLOTS; 
+           sleep 10; 
+           java -jar $EgaDemoClient_path $header -nvb -dc $id_sample/_*.cip -dck key_$id_sample -path ./; 
+           ln -s $id_sample/*.fastq.gz ${name_sample}_L001_R\`ls $id_sample/*.fastq.gz | sed 's/pair/\t/g'  | cut -f2\`;
+           "
+      eval $CMD
+      echo $CMD >> run.bash
     elif [ -d $header ]
     then
       echo
@@ -141,7 +155,7 @@ do
         echo "ln -sf data/\`basename $myfastq\` ${name_sample}\`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2\` # linking file..." >> run.bash
       done
     else
-      printf "\n###### Metadata file lacking of comment header! \n\t(The first line of input metadata file should start with \"\# \" and follow by \" SRA\", \"TCGA\", or local directory path\n"
+      printf "\n###### download list file format error\n"
     fi
   fi
   echo "cd $CWD # changing back to working directory..." >> run.bash
