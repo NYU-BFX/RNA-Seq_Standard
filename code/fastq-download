@@ -67,40 +67,39 @@ do
       echo
       echo "###### Downloading $name_sample from $header!"
     
-      link_sample="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${id_sample:0:6}/$id_sample/"
-      ID_RUNS=(`curl -sS $link_sample | sed -r 's/\s+/\t/g' | cut -f9 `)
-      num_run=0
-      echo "$link_sample"
+      link_sample="https://www.ncbi.nlm.nih.gov/sra/$id_sample/"
+      ID_RUNS=(`wget -q -O - $link_sample | sed -E 's/run\=SRR/\n/g' | grep SRR | sed -E 's/\">|<\/a>/\t/g' | cut -f2`)
+      orig_num_run=0
       mkdir data  # creating data directory...
       echo "mkdir data  # creating data directory" >> run.bash
       for id_run in "${ID_RUNS[@]}"
       do
         echo "  |____ $id_run"
-        ((num_run++))
-        num_run=$(printf "%03d" $num_run)
-        link_run=${link_sample}${id_run}"/"
-        ID_FILES=(`curl -sS $link_run | sed -r 's/\s+/\t/g' | cut -f9 `)
+        ((orig_num_run++))
+        num_run=`printf "%0*d" 3 $orig_num_run`
+        link_run="ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/${id_run:0:6}/${id_run}/"
+        ID_FILES=(`curl --retry 10 --retry-delay 10 -sS $link_run | sed -r 's/\s+/\t/g' | cut -f9 `)
         for name_file in "${ID_FILES[@]}"
         do
+          id_file=${name_file%.*}
           echo "  |  |____ $id_file"
           echo "  |  |         Retrieving SRA... "
           link_file=${link_run}${name_file}
-          wget -nv $link_file # downloading .sra file
-          echo "wget -nv $link_file # download .sra file" >> run.bash
+          wget --tries inf -q $link_file # downloading .sra file
+          echo "wget --tries inf -q $link_file # download .sra file" >> run.bash
           echo "  |  |         Converting SRA..."
-          $fastq_dump_path --split-files -gzip $name_file # convert SRA file to fastq.gz file and seperate read1 and read2
-          echo "$fastq_dump_path --split-files -gzip $name_file # convert SRA file to fastq.gz file and seperate read1 and read2" >> run.bash
-          id_file=${name_file%.*}
+          $fastq_dump_path --split-files -gzip $name_file 1>&- # convert SRA file to fastq.gz file and seperate read1 and read2
+          echo "$fastq_dump_path --split-files -gzip $name_file 1>&- # convert SRA file to fastq.gz file and seperate read1 and read2" >> run.bash
           rm -rf $name_file  # cleaning up .sra file...
-          echo "mkdir data  # cleaning up .sra file..." >> run.bash
+          echo "rm -rf $name_file  # cleaning up .sra file..." >> run.bash
           mv ${id_file}_1.fastq.gz data/; ln -s data/${id_file}_1.fastq.gz ${name_sample}_L${num_run}_R1.fastq.gz # linking read1...
           echo "mv ${id_file}_1.fastq.gz data/; ln -s data/${id_file}_1.fastq.gz ${name_sample}_L${num_run}_R1.fastq.gz # linking read1..." >> run.bash
-          echo " |  |         Linking data/${id_file}_1.fastq.gz to ${name_sample}_L${num_run}_R1.fastq.gz"
+          echo "  |  |         Linking data/${id_file}_1.fastq.gz to ${name_sample}_L${num_run}_R1.fastq.gz"
           if [[ -f ${id_file}_2.fastq.gz ]] 
           then 
             mv ${id_file}_2.fastq.gz data/; ln -s data/${id_file}_2.fastq.gz ${name_sample}_L${num_run}_R2.fastq.gz # linking read2...
             echo "mv ${id_file}_2.fastq.gz data/; ln -s data/${id_file}_2.fastq.gz ${name_sample}_L${num_run}_R2.fastq.gz # linking read2..." >> run.bash
-            echo " |  |         Linking data/${id_file}_2.fastq.gz to ${name_sample}_L${num_run}_R2.fastq.gz"
+            echo "  |  |         Linking data/${id_file}_2.fastq.gz to ${name_sample}_L${num_run}_R2.fastq.gz"
           fi
         done
       done
@@ -155,7 +154,24 @@ do
         echo "ln -sf data/\`basename $myfastq\` ${name_sample}\`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2\` # linking file..." >> run.bash
       done
     else
-      printf "\n###### download list file format error\n"
+      LINK_FILES=(`echo $header | tr ',' '\n'`)
+      ID_FILES=(`echo $id_sample | tr ',' '\n'`)
+      echo
+      echo "###### Downloading $name_sample from Provided Links!"
+      orig_num_run=0
+      mkdir data  # creating data directory...
+      echo "mkdir data  # creating data directory" >> run.bash
+      for link_file in "${LINK_FILES[@]}"
+      do
+        echo "  |_______ Downloading $link_file"
+        wget -q $link_file # downloading file
+        echo "wget -q $link_file # download file" >> run.bash
+        base_name=`basename $link_file`
+        mv $base_name data/; ln -s data/$base_name ${name_sample}_${ID_FILES[$orig_num_run]}.fastq.gz # linking read...
+        echo "mv $base_name data/; ln -s data/$base_name ${name_sample}_${ID_FILES[$orig_num_run]}.fastq.gz # linking read..." >> run.bash
+        echo "  |        Linking data/$base_name to ${name_sample}_${ID_FILES[$orig_num_run]}.fastq.gz"
+        ((orig_num_run++))
+      done
     fi
   fi
   echo "cd $CWD # changing back to working directory..." >> run.bash
