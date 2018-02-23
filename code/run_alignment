@@ -176,6 +176,7 @@ sleep 5
 
 CMD="
 ln -s STAR.Aligned.sortedByCoord.out.bam $BASE_DIR/accepted_hits.bam;
+samtools index $BASE_DIR/accepted_hits.bam $BASE_DIR/accepted_hits.bam.bai
 rm -rf $BASE_DIR/rm_dup.*
 "
 printf "\n\n$CMD \n\n" >> $BASE_DIR/run.bash
