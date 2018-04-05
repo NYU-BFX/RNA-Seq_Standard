@@ -147,7 +147,7 @@ do
       echo $header
       ln -s $header data # linking source directory...
       echo "ln -s $header data # linking source directory..." >> run.bash
-      for myfastq in `ls -1 $header | grep "^$id_sample"`
+      for myfastq in `ls -1 $header | grep "^${id_sample}_L"`
       do
         echo "  |____ data/`basename $myfastq` to ${name_sample}`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2`"
         ln -sf data/`basename $myfastq` ${name_sample}`echo $myfastq | sed 's/'$id_sample'/\t/g' | cut -f2` # linking file...
